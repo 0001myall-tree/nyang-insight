@@ -224,6 +224,44 @@
   }
   .search-wrap input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(139,124,255,0.15); background: #fff; }
   .search-wrap .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 13px; pointer-events: none; }
+  .usage-btn {
+    flex-shrink: 0;
+    height: 44px;
+    padding: 0 18px;
+    border: 1.5px solid var(--accent-2);
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: var(--accent-2);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .usage-btn:hover {
+    background: #F7F4FF;
+    box-shadow: 0 8px 20px rgba(109,85,245,0.12);
+    transform: translateY(-1px);
+  }
+  .usage-modal-copy {
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.75;
+  }
+  .usage-modal-copy h4 {
+    color: var(--ink);
+    font-size: 15px;
+    margin: 18px 0 8px;
+  }
+  .usage-modal-copy ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+  .usage-modal-copy li { margin: 4px 0; }
 
   /* ─── CONTENT ─── */
   .content { padding: 28px 32px; flex: 1; }
@@ -563,6 +601,8 @@
     .hero-title { font-size: 30px; }
     .hero-desc { font-size: 13.5px; }
     .hero-svg { transform: translateX(60px); opacity: 0.82; }
+    .usage-btn { padding: 0 12px; }
+    .usage-btn span { display: none; }
     .stats-row { flex-wrap: wrap; }
   }
 
@@ -669,8 +709,13 @@
         <option value="title">제목순</option>
       </select>
       <div class="search-wrap">
+        <span class="search-icon">⌕</span>
         <input type="text" id="searchInput" placeholder="제목, 발췌, 태그 검색…" oninput="render()">
       </div>
+      <button class="usage-btn" onclick="document.getElementById('usageModal').classList.add('open')">
+        <svg class="line-icon" viewBox="0 0 24 24" style="width:16px; height:16px; stroke-width:2.2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>사용법</span>
+      </button>
     </div>
     <div class="content">
       <!-- 히어로 배너 -->
@@ -1074,6 +1119,44 @@
           <span>삭제</span>
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 사용법 / 소개 모달 -->
+<div class="modal-overlay" id="usageModal" style="z-index: 300;">
+  <div class="modal" style="max-width: 640px;">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:10px;">
+        <img src="/nyang_logo.png" alt="" style="width:34px; height:34px; border-radius:10px; object-fit:cover; box-shadow:0 4px 10px rgba(109,85,245,0.14);">
+        <span>Nyang Insight란?</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('usageModal')">✕</button>
+    </div>
+    <div class="modal-body usage-modal-copy">
+      <p>Nyang Insight는 책, 강의, 영화, 유튜브 등에서 얻은 지식을 한곳에 저장하고, AI를 통해 다시 연결하여 새로운 인사이트를 얻을 수 있는 무료 지식 에이전트입니다.</p>
+      <p>클리어런스 랩은 “지식은 실천할 때 비로소 가치가 생긴다.”는 철학을 바탕으로 이 앱을 만들었습니다.</p>
+
+      <h4>주요 기능</h4>
+      <ul>
+        <li>책, 영화, 강의, 유튜브 등 다양한 지식을 한곳에 저장</li>
+        <li>저장한 지식을 AI와 함께 다시 탐색하고 대화</li>
+        <li>흩어진 지식을 연결하여 새로운 인사이트 발견</li>
+        <li>떠오른 실행 아이디어를 냥냥코치 할 일로 바로 보내기</li>
+      </ul>
+
+      <h4>로컬 AI 지원</h4>
+      <p>Nyang Insight는 API는 물론 로컬 AI도 지원합니다. 로컬 AI를 사용하면 별도의 API 비용 없이 내 PC에서 AI와 대화할 수 있습니다.</p>
+
+      <h4>냥냥코치 연동</h4>
+      <p>Nyang Insight는 단독으로도 충분히 사용할 수 있습니다. 하지만 냥냥코치와 함께 사용하면, 생각은 Nyang Insight에서 정리하고 실행은 냥냥코치에서 이어갈 수 있습니다.</p>
+      <p>AI와 대화하다가 떠오른 아이디어나 할 일을 버튼 한 번으로 냥냥코치 플래너에 보낼 수 있습니다.</p>
+
+      <h4>우리의 목표</h4>
+      <p>지식을 저장하는 것에서 끝나지 않고, 필요할 때 다시 꺼내 활용하여 행동으로 이어지게 만드는 것. 그것이 Nyang Insight를 만든 이유입니다.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeModal('usageModal')">확인</button>
     </div>
   </div>
 </div>
@@ -1644,7 +1727,7 @@ function renderActionTodoListEdit() {
   `).join('');
 }
 
-['addModal','detailModal','customSourceModal'].forEach(id => {
+['addModal','detailModal','customSourceModal','usageModal'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
 });
