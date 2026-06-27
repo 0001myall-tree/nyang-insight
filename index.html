@@ -1,0 +1,2477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nyang Insight — 나만의 지식 에이전트</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --ink:       #151827;
+    --ink-2:     #5F6478;
+    --ink-3:     #8C91A6;
+    --paper:     #FBFCFF;
+    --paper-2:   #FFFFFF;
+    --paper-3:   #E7EAF2;
+    --accent:    #6F58F6;
+    --accent-2:  #6D55F5;
+    --accent-bg: #F1EFFF;
+    --accent-tag: #58BD83;
+    --sidebar-muted: #73788C;
+    --danger:    #FF4D4D;
+    --warn:      #FFA07A;
+    --r:         16px;             /* 둥글둥글한 라운드 모서리 */
+    --shadow:    0 8px 24px rgba(139, 124, 255, 0.04); /* 부드럽고 가벼운 그림자 */
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--paper-3);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+
+  /* Sidebar custom scrollbar */
+  .sidebar-scroll-wrap::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar-scroll-wrap::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-scroll-wrap::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+  }
+  .sidebar-scroll-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  #tagNavList::-webkit-scrollbar {
+    width: 4px;
+  }
+  #tagNavList::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #tagNavList::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  .line-icon {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    stroke-width: 2.2px;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .icon .line-icon {
+    width: 18px;
+    height: 18px;
+  }
+  .source-badge .line-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2px;
+  }
+
+  .suggestion-chip {
+    flex-shrink: 0;
+    background: #FFFFFF;
+    border: 1px solid var(--paper-3);
+    color: var(--ink-2);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    white-space: nowrap;
+    outline: none;
+    user-select: none;
+  }
+  .suggestion-chip:hover {
+    background: var(--paper-2);
+    border-color: var(--accent-tag);
+    color: var(--accent-2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(139,124,255,0.08);
+  }
+  .suggestion-chip:active {
+    transform: translateY(0);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ─── LAYOUT ─── */
+  .app { display: flex; min-height: 100vh; width: 100%; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: #FFFFFF;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 20px;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    border-right: 1px solid var(--paper-3);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin-bottom: 2px;
+    color: var(--ink);
+  }
+  .logo img {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    object-fit: cover;
+    box-shadow: 0 6px 14px rgba(109,85,245,0.14);
+  }
+  .logo span { color: var(--accent-2); font-weight: 500; }
+  .logo-sub { font-size: 12px; color: var(--sidebar-muted); letter-spacing: -0.1px; margin: 0 0 32px 38px; }
+
+  .nav-label { font-size: 12px; letter-spacing: -0.1px; color: var(--ink-2); margin: 20px 0 8px; font-weight: 700; }
+
+  .nav-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    background: transparent; border: 1px solid transparent; color: var(--sidebar-muted);
+    font-family: inherit; font-size: 14px;
+    cursor: pointer; width: 100%; text-align: left;
+    transition: background 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .nav-btn:hover { background: #F7F7FF; color: var(--accent-2); border-color: #EEEAFE; }
+  .nav-btn.active {
+    background: linear-gradient(135deg, #7F68FF 0%, #654DF1 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(109,85,245,0.18);
+  }
+  .nav-btn .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-btn .count {
+    margin-left: auto; background: #F0F1F6; border-radius: 20px;
+    padding: 1px 7px; font-size: 11px; color: var(--ink-2);
+  }
+  .nav-btn.active .count { background: rgba(255,255,255,0.2); color: #fff; }
+
+  .add-btn {
+    margin-top: auto; width: 100%;
+    background: linear-gradient(135deg, #7F68FF 0%, #654DF1 100%); color: #fff; border: none;
+    padding: 12px; border-radius: 8px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .add-btn:hover { filter: brightness(0.98); box-shadow: 0 8px 20px rgba(109,85,245,0.18); }
+
+  /* ─── MAIN ─── */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; width: calc(100% - 240px); }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    background: #ffffff; border-bottom: 1px solid var(--paper-3);
+    padding: 24px 32px; display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 50;
+    flex-wrap: nowrap;
+    box-shadow: none;
+  }
+  .page-title { font-family: 'Inter', 'Noto Sans KR', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; flex-shrink: 0; white-space: nowrap; color: var(--ink); }
+  .search-wrap { position: relative; flex: 1; min-width: 0; }
+  .search-wrap input {
+    background: var(--paper-2); border: 1px solid var(--paper-3);
+    border-radius: 10px; padding: 12px 18px 12px 38px;
+    font-size: 14px; color: var(--ink); width: 100%;
+    font-family: inherit; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .search-wrap input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(139,124,255,0.15); background: #fff; }
+  .search-wrap .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 13px; pointer-events: none; }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 28px 32px; flex: 1; }
+
+  /* ─── HERO BANNER ─── */
+  .hero-banner {
+    position: relative;
+    background:
+      radial-gradient(circle at 18% 34%, rgba(255,255,255,0.86) 0 24%, rgba(255,255,255,0) 42%),
+      radial-gradient(circle at 62% 46%, rgba(229,247,239,0.76) 0 30%, rgba(229,247,239,0) 55%),
+      linear-gradient(120deg, #F1ECFA 0%, #E8F6EF 42%, #EEF3FB 76%, #EEE9F8 100%);
+    border-radius: 18px;
+    margin-bottom: 26px;
+    overflow: hidden;
+    height: 214px;
+    border: 1px solid rgba(139,124,204,0.16);
+    box-shadow: 0 14px 38px rgba(139,124,204,0.07), inset 0 1px 0 rgba(255,255,255,0.72);
+  }
+  .hero-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.68) 0 22%, rgba(255,255,255,0.34) 38%, rgba(255,255,255,0) 66%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .hero-inner {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 42px;
+    z-index: 3;
+  }
+  .hero-text {
+    flex-shrink: 0;
+    max-width: 420px;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--accent-tag);
+    margin-bottom: 9px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 18px; height: 1.5px;
+    background: var(--accent-tag);
+    border-radius: 2px;
+  }
+  .hero-eyebrow::after {
+    content: '';
+    display: inline-block;
+    width: 18px; height: 1.5px;
+    background: var(--accent-tag);
+    border-radius: 2px;
+    opacity: 0.65;
+  }
+  .hero-title {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+    font-size: 35px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--ink);
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .hero-title span { color: var(--accent); }
+  .hero-desc {
+    display: inline-block;
+    font-size: 14.5px;
+    color: var(--ink-2);
+    line-height: 1.72;
+    font-weight: 500;
+    padding: 2px 0;
+  }
+  .hero-desc strong {
+    color: var(--ink);
+    font-weight: 800;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 58%, rgba(178,234,202,0.55) 58%);
+  }
+  .hero-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* ─── STATS ROW ─── */
+  .stats-row { display: flex; gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: #fff;
+    border: 1px solid var(--paper-3);
+    border-radius: var(--r);
+    padding: 18px 22px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 12px rgba(61,58,78,0.05), 0 1px 3px rgba(61,58,78,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(139,124,204,0.10), 0 2px 6px rgba(61,58,78,0.05);
+  }
+  .stat-icon-wrap {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .stat-icon-wrap.notes-icon { background: #EEE9FF; color: var(--accent); }
+  .stat-icon-wrap.type-icon  { background: #E8F5F0; color: var(--accent-tag); }
+  .stat-icon-wrap.tag-icon   { background: #FEF3C7; color: #D97706; }
+  .stat-icon-wrap.insight-icon { background: #F0ECFF; color: var(--accent-2); }
+  .stat-icon { font-size: 22px; }
+  .stat-val { font-size: 24px; font-weight: 700; line-height: 1; color: var(--ink); }
+  .stat-lbl { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+  .stat-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+  /* ─── NOTES GRID ─── */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+
+  .note-card {
+    background: #fff;
+    border: 1px solid rgba(228,223,236,0.8);
+    border-radius: var(--r);
+    padding: 22px 22px 18px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+    display: flex; flex-direction: column; gap: 11px;
+    position: relative;
+    border-left: 3px solid transparent;
+    box-shadow: 0 1px 4px rgba(61,58,78,0.04);
+  }
+  .note-card:hover {
+    box-shadow: 0 8px 28px rgba(139,124,204,0.10), 0 2px 8px rgba(61,58,78,0.05);
+    border-color: rgba(139,124,204,0.2);
+    border-left: 3px solid var(--accent-tag);
+    transform: translateY(-1px);
+  }
+
+  .note-header { display: flex; align-items: flex-start; gap: 10px; }
+  .source-badge {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .note-meta { flex: 1; min-width: 0; }
+  .note-title { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-source-name { font-size: 12px; color: var(--ink-3); }
+
+  .note-excerpt {
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    color: var(--ink-2); font-size: 14px; line-height: 1.65;
+    border-left: 3px solid var(--accent-tag); padding-left: 12px;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-thought {
+    font-size: 13px; color: var(--ink-2); line-height: 1.55;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .tag {
+    background: var(--accent-bg); color: var(--accent-tag);
+    border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500;
+  }
+  .note-date { margin-left: auto; font-size: 11px; color: var(--ink-3); }
+
+  /* ─── EMPTY STATE ─── */
+  .empty {
+    text-align: center; padding: 80px 20px; color: var(--ink-3);
+  }
+  .empty .big { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; margin-bottom: 20px; }
+  .empty-cta {
+    background: var(--accent); color: #fff; border: none;
+    padding: 11px 22px; border-radius: var(--r);
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .empty-cta:hover { background: var(--accent-2); }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(61, 58, 78, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; padding: 20px;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff; border-radius: var(--r);
+    width: 100%; max-width: 620px; max-height: 90vh;
+    overflow-y: auto; box-shadow: 0 24px 64px rgba(61, 58, 78, 0.16);
+    transform: translateY(16px); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1.5px solid var(--paper-3);
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    padding: 24px 28px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-family: 'Inter', 'Noto Sans KR', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .modal-close {
+    background: var(--paper-2); border: none; border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center; color: var(--ink-2);
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: var(--paper-3); }
+
+  .modal-body { padding: 20px 28px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+  .field-row { display: flex; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  label { font-size: 12px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  input[type=text], select, textarea {
+    border: 1.5px solid var(--paper-3); border-radius: 12px;
+    padding: 11px 14px; font-family: inherit;
+    font-size: 14px; color: var(--ink); background: var(--paper-2);
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    width: 100%;
+  }
+  input[type=text]:focus, select:focus, textarea:focus {
+    border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(139,124,255,0.15);
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+  #excerptField { font-family: 'Noto Sans KR', 'Inter', sans-serif; font-size: 15px; min-height: 110px; }
+
+  .tag-input-wrap {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    border: 1.5px solid var(--paper-3); border-radius: 12px; padding: 9px 12px;
+    background: var(--paper-2); cursor: text; min-height: 44px;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .tag-input-wrap:focus-within {
+    border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(139,124,255,0.15);
+    background: #fff;
+  }
+  .tag-chip {
+    background: var(--accent-bg); color: var(--accent-tag);
+    border-radius: 20px; padding: 2px 8px 2px 10px; font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tag-chip button {
+    background: none; border: none; cursor: pointer; color: var(--accent-tag);
+    font-size: 14px; line-height: 1; padding: 0; display: flex; align-items: center;
+  }
+  .tag-inline-input {
+    border: none !important; outline: none; background: none;
+    padding: 2px 4px; font-size: 13px; min-width: 80px; flex: 1;
+    box-shadow: none !important;
+  }
+
+  .modal-footer {
+    padding: 0 28px 24px;
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+  .btn-ghost {
+    background: none; border: 1.5px solid var(--paper-3);
+    padding: 10px 20px; border-radius: 12px;
+    font-family: inherit; font-size: 14px; cursor: pointer;
+    color: var(--ink-2); transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-ghost:hover { background: var(--paper-2); border-color: var(--accent-bg); }
+  .btn-primary {
+    background: var(--accent-2); color: #fff; border: none;
+    padding: 10px 22px; border-radius: 12px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .btn-primary:hover { background: #7A6BFF; }
+  .btn-danger {
+    background: #FFF5F5;
+    color: #FF4D4D;
+    border: 1.5px solid #FFD2D2;
+    padding: 8.5px 20.5px;
+    border-radius: 12px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-danger:hover {
+    background: #FFEBEB;
+    color: #E53E3E;
+    border-color: #FFA8A8;
+  }
+
+  /* ─── DETAIL VIEW ─── */
+  .detail-modal .modal { max-width: 660px; }
+  .detail-excerpt {
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    font-size: 16px; line-height: 1.75; color: var(--ink-2);
+    border-left: 4px solid var(--accent-tag); padding-left: 18px;
+    margin: 4px 0;
+  }
+  .detail-section-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.7px; color: var(--ink-3); margin-bottom: 6px;
+  }
+  .detail-thought { font-size: 15px; line-height: 1.7; color: var(--ink); }
+  .detail-actions { display: flex; gap: 8px; margin-top: 8px; }
+
+  /* ─── SOURCE COLORS ─── */
+  .src-book    { background: #fef3c7; }
+  .src-lecture { background: #dbeafe; }
+  .src-movie   { background: #fce7f3; }
+  .src-podcast { background: #ede9fe; }
+  .src-youtube { background: #fee2e2; }
+  .src-article { background: #d1fae5; }
+  .src-other   { background: #f1f5f9; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; }
+    .topbar { padding: 14px 16px; }
+    .content { padding: 18px 16px; }
+    .search-wrap input { width: 180px; }
+    .hero-banner { height: 220px; }
+    .hero-inner { padding: 0 24px; }
+    .hero-text { max-width: 300px; }
+    .hero-title { font-size: 30px; }
+    .hero-desc { font-size: 13.5px; }
+    .hero-svg { transform: translateX(60px); opacity: 0.82; }
+    .stats-row { flex-wrap: wrap; }
+  }
+
+  /* ─── SCROLL ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--paper-2); }
+  ::-webkit-scrollbar-thumb { background: var(--paper-3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- 로딩 화면 (서버 연결 중) -->
+<div id="loginScreen" style="display:none;position:fixed;inset:0;background:var(--paper);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
+  <div style="text-align:center;">
+    <div style="font-family:'Inter','Noto Sans KR',sans-serif;font-size:32px;font-weight:800;color:var(--ink);">Nyang <span style="color:var(--accent-2);font-weight:500;">Insight</span></div>
+    <div style="font-size:13px;color:var(--accent-tag);letter-spacing:1px;text-transform:uppercase;margin-top:4px;">나만의 지식 에이전트</div>
+  </div>
+  <p style="font-size:15px;color:var(--ink-2);text-align:center;line-height:1.7;">책, 영화, 강의에서 얻은 인사이트를<br>나만의 언어로 기록하고 꺼내보세요.</p>
+  <div style="background:#fff;border:1px solid var(--paper-3);border-radius:12px;padding:24px 32px;text-align:center;max-width:340px;">
+    <div style="font-size:32px;margin-bottom:12px;">⚠️</div>
+    <div style="font-weight:600;margin-bottom:8px;">서버에 연결할 수 없어요</div>
+    <div style="font-size:13px;color:var(--ink-2);line-height:1.7;">
+      <b>실행.command</b> 파일을 더블클릭해서<br>서버를 먼저 시작해주세요.<br><br>
+      그 다음 이 페이지를 새로고침하면 돼요!
+    </div>
+    <button onclick="location.reload()" style="margin-top:16px;background:var(--accent-2);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;">새로고침</button>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none;width:100%">
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><img src="/nyang_logo.png" alt="">Nyang <span>Insight</span></div>
+    <div class="logo-sub">나만의 지식 에이전트</div>
+
+    <!-- 탭 전환 -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
+      <button id="tabNotes" onclick="switchTab('notes')" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; background:linear-gradient(135deg,#7F68FF 0%,#654DF1 100%); color:#fff; border:1px solid transparent; border-radius:8px; padding:9px; font-size:12.5px; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s;">
+        <svg class="line-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>
+        <span>노트</span>
+      </button>
+      <button id="tabChat" onclick="switchTab('chat')" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; background:#fff; color:var(--ink); border:1px solid var(--paper-3); border-radius:8px; padding:9px; font-size:12.5px; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s;">
+        <svg class="line-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>AI 채팅</span>
+      </button>
+    </div>
+
+    <!-- 스크롤 래퍼 추가 -->
+    <div class="sidebar-scroll-wrap" style="flex: 1; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; width: calc(100% + 12px); padding-right: 12px;">
+      <div id="sidebarNotes">
+        <div class="nav-label">전체 보기</div>
+        <button class="nav-btn active" data-filter="all" onclick="setFilter('all',this)">
+          <span class="icon"><svg class="line-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg></span> 전체 <span class="count" id="cnt-all">0</span>
+        </button>
+
+        <div class="nav-label" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>소스 유형</span>
+          <button onclick="openAddSourceTypeModal()" style="background:none; border:none; color:var(--accent-tag); font-size:16px; cursor:pointer; font-weight:bold; padding:0 4px; line-height:1;">+</button>
+        </div>
+        <div id="sidebarSourceTypeList"></div>
+
+        <div class="nav-label" id="tagNavLabel" style="display:none">태그별 보기</div>
+        <div id="tagNavList" style="overflow-y:auto;max-height:160px"></div>
+      </div>
+
+      <div id="sidebarChat" style="display:none;flex-direction:column;gap:8px;">
+        <div class="nav-label">빠른 전환</div>
+        <div id="aiQuickSwitch" style="display:flex;flex-direction:column;gap:4px;"></div>
+        <div class="nav-label" style="margin-top:4px">설정</div>
+        <button class="nav-btn" onclick="openAISettings()"><span class="icon"><svg class="line-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span> AI 추가/수정</button>
+        <div id="aiStatusBadge" style="font-size:11px;color:#888;padding:6px 12px;line-height:1.5;">연결 안 됨</div>
+        <div class="nav-label" style="margin-top:8px">대화 관리</div>
+        <button class="nav-btn" onclick="clearChat()"><span class="icon"><svg class="line-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></span> 대화 초기화</button>
+      </div>
+    </div>
+
+    <div id="nyangPromoCard" style="display:none; background:#FAFBFF; border:1px solid var(--paper-3); border-radius:12px; padding:12px; margin-top:auto; margin-bottom:12px; cursor:pointer; transition:all 0.15s ease;" onclick="window.openNyangPromoModal()" onmouseover="this.style.borderColor='var(--accent-tag)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.borderColor='var(--paper-3)'; this.style.transform='none';">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;"><img src="/nyang_logo.png" style="width:16px; height:16px; border-radius:50%; object-fit:cover;"></span>
+        <span style="font-size:11px; font-weight:700; color:var(--accent-tag); text-transform:uppercase; letter-spacing:0.5px;">냥냥코치 루틴 비서</span>
+      </div>
+      <p style="font-size:12px; color:var(--ink-2); line-height:1.5; margin:0;">
+        지식을 일상에 체화시키는 나만의 루틴 비서, 냥냥코치 알아보기 &rarr;
+      </p>
+    </div>
+    <button class="nav-btn" id="btnNyangLogin" onclick="toggleNyangLogin()" style="margin-top:0; margin-bottom:0;"></button>
+    <button class="add-btn" style="margin-top:12px" onclick="openAddModal()">+ 새 노트 추가</button>
+    <button class="nav-btn" onclick="window.shareApp()" style="margin-top:8px; border:1px solid var(--paper-3); background:#fff; display:flex; align-items:center; justify-content:center; gap:6px; color:var(--ink); font-size:12px; font-weight:700; padding:8px 12px; border-radius:8px;">
+      <svg class="line-icon" viewBox="0 0 24 24" style="width:13px; height:13px; stroke-width:2.2px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+      <span>친구에게 앱 공유하기</span>
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- 노트 화면 -->
+    <div id="screenNotes" style="width:100%;display:flex;flex-direction:column;">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">전체 노트</div>
+      <select id="sortSelect" onchange="render()" style="border:1px solid var(--paper-3);border-radius:20px;padding:7px 14px;font-size:13px;font-family:'Inter',sans-serif;color:var(--ink-2);background:var(--paper-2);outline:none;cursor:pointer;flex-shrink:0;width:auto;">
+        <option value="newest">최신순</option>
+        <option value="oldest">오래된순</option>
+        <option value="title">제목순</option>
+      </select>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="제목, 발췌, 태그 검색…" oninput="render()">
+      </div>
+    </div>
+    <div class="content">
+      <!-- 히어로 배너 -->
+      <div class="hero-banner" id="heroBanner">
+        <!-- 배너 전체를 채우는 라인 일러스트 SVG -->
+        <svg class="hero-svg" viewBox="0 0 1000 214" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="softCardShadow" x="-30%" y="-30%" width="160%" height="170%">
+              <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#8B7CCC" flood-opacity="0.12"/>
+            </filter>
+            <linearGradient id="cardWash" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.92"/>
+              <stop offset="1" stop-color="#F5F2FF" stop-opacity="0.68"/>
+            </linearGradient>
+          </defs>
+
+          <ellipse cx="620" cy="104" rx="365" ry="136" fill="#DDF4EA" opacity="0.34"/>
+          <ellipse cx="900" cy="54" rx="142" ry="96" fill="#D9D2F2" opacity="0.25"/>
+          <ellipse cx="300" cy="170" rx="190" ry="48" fill="#FFFFFF" opacity="0.28"/>
+
+          <path d="M326 58 C414 18 506 40 606 92 C724 154 825 124 936 58" fill="none" stroke="#B5A8E4" stroke-width="1" opacity="0.28"/>
+          <path d="M350 152 C448 112 548 164 640 122 C740 77 808 126 924 96" fill="none" stroke="#83C9AB" stroke-width="1" opacity="0.24"/>
+          <path d="M430 104 C520 44 642 42 766 82 C838 104 900 96 965 70" fill="none" stroke="#C9BFF1" stroke-width="1" opacity="0.22"/>
+
+          <circle cx="634" cy="105" r="8" fill="#8B7CFF" opacity="0.58"/>
+          <circle cx="634" cy="105" r="18" fill="#8B7CFF" opacity="0.09"/>
+          <line x1="634" y1="105" x2="472" y2="74" stroke="#8B7CFF" stroke-width="1.1" stroke-dasharray="3,5" opacity="0.34"/>
+          <line x1="634" y1="105" x2="540" y2="150" stroke="#6EBF8B" stroke-width="1.1" stroke-dasharray="3,5" opacity="0.34"/>
+          <line x1="634" y1="105" x2="705" y2="46" stroke="#8B7CFF" stroke-width="1.1" stroke-dasharray="3,5" opacity="0.32"/>
+          <line x1="634" y1="105" x2="778" y2="132" stroke="#6EBF8B" stroke-width="1.1" stroke-dasharray="3,5" opacity="0.32"/>
+          <line x1="634" y1="105" x2="878" y2="72" stroke="#8B7CFF" stroke-width="1.1" stroke-dasharray="3,5" opacity="0.31"/>
+          <line x1="634" y1="105" x2="918" y2="154" stroke="#6EBF8B" stroke-width="1.1" stroke-dasharray="3,5" opacity="0.22"/>
+
+          <g opacity="0.96" filter="url(#softCardShadow)">
+            <g transform="translate(430 51) rotate(-8)">
+              <rect width="74" height="50" rx="10" fill="url(#cardWash)" stroke="#DED8F4"/>
+              <rect x="15" y="14" width="16" height="24" rx="2" fill="#EEE9FF" stroke="#8B7CFF" opacity="0.78"/>
+              <line x1="39" y1="17" x2="58" y2="17" stroke="#8B7CFF" stroke-width="2" opacity="0.34"/>
+              <line x1="39" y1="25" x2="62" y2="25" stroke="#8B7CFF" stroke-width="2" opacity="0.22"/>
+              <line x1="39" y1="33" x2="55" y2="33" stroke="#8B7CFF" stroke-width="2" opacity="0.2"/>
+            </g>
+            <g transform="translate(680 22) rotate(8)">
+              <rect width="58" height="48" rx="10" fill="#FFFFFF" stroke="#DED8F4"/>
+              <rect x="25" y="12" width="11" height="19" rx="5.5" fill="none" stroke="#8B7CFF" stroke-width="2"/>
+              <path d="M20 27 C20 38 42 38 42 27" fill="none" stroke="#8B7CFF" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="31" y1="38" x2="31" y2="43" stroke="#8B7CFF" stroke-width="1.8" stroke-linecap="round"/>
+            </g>
+            <g transform="translate(812 122) rotate(10)">
+              <rect width="68" height="55" rx="10" fill="#FFFFFF" stroke="#DED8F4"/>
+              <path d="M18 39 L18 19 L42 19 L50 27 L50 39 Z" fill="#EEE9FF" stroke="#8B7CFF" opacity="0.75"/>
+              <path d="M42 19 L42 28 L50 28" fill="none" stroke="#8B7CFF" opacity="0.62"/>
+              <line x1="25" y1="31" x2="42" y2="31" stroke="#8B7CFF" stroke-width="2" opacity="0.32"/>
+            </g>
+            <g transform="translate(890 52) rotate(9)">
+              <rect width="72" height="52" rx="10" fill="#FFFFFF" stroke="#DED8F4"/>
+              <rect x="20" y="18" width="34" height="22" rx="5" fill="#FBE5EC" stroke="#E66F7E"/>
+              <polygon points="34,24 46,29 34,35" fill="#E66F7E"/>
+            </g>
+          </g>
+
+          <g opacity="0.72">
+            <rect x="334" y="74" width="38" height="54" rx="4" fill="none" stroke="#8B7CCC" stroke-width="2"/>
+            <line x1="346" y1="74" x2="346" y2="128" stroke="#8B7CCC" stroke-width="1.2" opacity="0.5"/>
+            <line x1="354" y1="91" x2="366" y2="91" stroke="#8B7CCC" stroke-width="1.3" opacity="0.42"/>
+            <line x1="354" y1="101" x2="366" y2="101" stroke="#8B7CCC" stroke-width="1.3" opacity="0.3"/>
+            <rect x="374" y="82" width="28" height="46" rx="4" fill="none" stroke="#A99DD4" stroke-width="1.5" opacity="0.75"/>
+          </g>
+
+          <g opacity="0.68">
+            <rect x="524" y="135" width="36" height="26" rx="6" fill="#FFFFFF" stroke="#B6A9DD" stroke-width="1.7"/>
+            <path d="M560 142 C570 142 570 154 560 154" fill="none" stroke="#B6A9DD" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M535 134 C535 128 540 126 540 120" fill="none" stroke="#B6A9DD" stroke-linecap="round"/>
+            <path d="M545 134 C545 128 550 126 550 120" fill="none" stroke="#B6A9DD" stroke-linecap="round"/>
+            <line x1="523" y1="158" x2="560" y2="158" stroke="#B6A9DD" stroke-width="1.2" opacity="0.5"/>
+          </g>
+
+          <g opacity="0.62">
+            <rect x="930" y="128" width="52" height="38" rx="5" fill="none" stroke="#D7A171" stroke-width="1.8"/>
+            <line x1="941" y1="128" x2="941" y2="166" stroke="#D7A171" opacity="0.55"/>
+            <line x1="971" y1="128" x2="971" y2="166" stroke="#D7A171" opacity="0.55"/>
+            <rect x="930" y="136" width="11" height="8" rx="1" fill="none" stroke="#D7A171" opacity="0.45"/>
+            <rect x="930" y="150" width="11" height="8" rx="1" fill="none" stroke="#D7A171" opacity="0.45"/>
+            <rect x="971" y="136" width="11" height="8" rx="1" fill="none" stroke="#D7A171" opacity="0.45"/>
+            <rect x="971" y="150" width="11" height="8" rx="1" fill="none" stroke="#D7A171" opacity="0.45"/>
+          </g>
+
+          <g opacity="0.62">
+            <rect x="748" y="68" width="62" height="40" rx="6" fill="none" stroke="#83B9D5" stroke-width="2"/>
+            <rect x="755" y="75" width="48" height="28" rx="3" fill="none" stroke="#83B9D5" stroke-width="1" opacity="0.55"/>
+            <line x1="742" y1="110" x2="818" y2="110" stroke="#83B9D5" stroke-width="1.8" stroke-linecap="round" opacity="0.68"/>
+            <line x1="772" y1="111" x2="788" y2="116" stroke="#83B9D5" stroke-width="1.4" stroke-linecap="round" opacity="0.48"/>
+          </g>
+
+          <g opacity="0.68">
+            <path d="M325 198 C325 168 312 149 318 126" fill="none" stroke="#6EBF8B" stroke-width="2.1" stroke-linecap="round"/>
+            <path d="M317 150 C300 139 293 151 304 164" fill="none" stroke="#6EBF8B" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M321 170 C307 162 302 172 313 184" fill="none" stroke="#6EBF8B" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M325 188 C340 176 348 186 338 198" fill="none" stroke="#6EBF8B" stroke-width="1.7" stroke-linecap="round"/>
+            <ellipse cx="326" cy="200" rx="32" ry="6" fill="#A8DCC0" opacity="0.25"/>
+          </g>
+          <g opacity="0.58">
+            <path d="M952 200 C952 180 964 165 962 148" fill="none" stroke="#6EBF8B" stroke-width="2" stroke-linecap="round"/>
+            <path d="M961 168 C976 158 982 169 970 181" fill="none" stroke="#6EBF8B" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M955 184 C943 176 937 184 946 194" fill="none" stroke="#6EBF8B" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+
+          <circle cx="363" cy="42" r="2" fill="#6EBF8B" opacity="0.56"/>
+          <circle cx="510" cy="34" r="2.2" fill="#8B7CCC" opacity="0.34"/>
+          <circle cx="584" cy="180" r="2" fill="#8B7CCC" opacity="0.32"/>
+          <circle cx="760" cy="38" r="2" fill="#6EBF8B" opacity="0.42"/>
+          <circle cx="938" cy="184" r="2" fill="#8B7CCC" opacity="0.33"/>
+          <path d="M404 41 L409 46 L404 51 L399 46 Z" fill="#FFFFFF" stroke="#D8D1F2" opacity="0.72"/>
+          <path d="M732 184 L737 189 L732 194 L727 189 Z" fill="#FFFFFF" stroke="#D8D1F2" opacity="0.62"/>
+          <path d="M853 34 L858 39 L853 44 L848 39 Z" fill="#FFFFFF" stroke="#A9DABD" opacity="0.8"/>
+        </svg>
+
+        <!-- 텍스트 오버레이 -->
+        <div class="hero-inner">
+          <div class="hero-text">
+            <div class="hero-eyebrow">나만의 지식 에이전트</div>
+            <div class="hero-title">나만의 <span>아카이브</span></div>
+            <div class="hero-desc"><strong>AI가 흩어진 지식을 연결해</strong><br>새로운 인사이트를 만듭니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row" id="statsRow"></div>
+      <div class="notes-grid" id="notesGrid"></div>
+      <div class="empty" id="emptyState" style="display:none">
+        <div class="big">📖</div>
+        <p>아직 노트가 없어요.<br>첫 번째 지식을 기록해 보세요!</p>
+        <button class="empty-cta" onclick="openAddModal()">+ 노트 추가하기</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- AI 채팅 화면 -->
+    <div id="screenChat" style="display:none;flex-direction:column;height:100vh;width:100%;">
+      <div class="topbar">
+        <div class="page-title">✦ AI 채팅</div>
+        <div style="font-size:13px;color:var(--ink-3)" id="aiModelLabel">AI 미연결 — 설정에서 연결해주세요</div>
+      </div>
+      <div id="chatMessages" style="flex:1;overflow-y:auto;padding:24px 48px;display:flex;flex-direction:column;gap:16px;">
+        <div style="text-align:center;color:var(--ink-3);padding:60px 20px;">
+          <div style="width:72px;height:72px;background:var(--paper-2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 2px 12px rgba(139,124,255,0.15);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+          </div>
+          <div style="font-weight:600;font-size:16px;color:var(--ink-2);margin-bottom:10px;">AI에게 노트 기반으로 물어보세요</div>
+          <div style="font-size:13px;line-height:1.9;color:var(--ink-3);">
+            "글쓰기 고민하는 친구한테 뭐라고 조언해줄까?" <br>
+            "요즘 번아웃인데 내가 기록한 것 중에 도움될 게 있을까?" <br>
+            "내가 배운 것들로 새로운 아이디어 뽑아줘"
+          </div>
+        </div>
+      </div>
+      <!-- 입력창 -->
+      <div style="padding:16px 48px;border-top:1px solid var(--paper-3);background:var(--paper);display:flex;flex-direction:column;gap:12px;width:100%;">
+        <!-- 추천 칩 영역 (Recommendation Chips) -->
+        <div id="chatSuggestionChips" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; width:100%; scrollbar-width: none; -ms-overflow-style: none;">
+          <button type="button" class="suggestion-chip" onclick="window.clickSuggestionChip('최근 읽은 책 중에서 내일부터 당장 실천할 행동 가이드 3개 추천해줘')">
+            <svg class="line-icon" viewBox="0 0 24 24" style="width:13px; height:13px; stroke-width:2.2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <span>실천 가이드 3개 추천</span>
+          </button>
+          <button type="button" class="suggestion-chip" onclick="window.clickSuggestionChip('내가 배운 것들을 엮어서 창의적인 새로운 프로젝트나 글쓰기 아이디어 하나 제안해줘')">
+            <svg class="line-icon" viewBox="0 0 24 24" style="width:13px; height:13px; stroke-width:2.2px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>창의적 아이디어 제안</span>
+          </button>
+        </div>
+        
+        <div style="display:flex;gap:10px;align-items:flex-end;width:100%;">
+          <textarea id="chatInput" placeholder="고민이나 질문을 자유롭게 적어보세요…" onkeydown="handleChatKey(event)" style="flex:1;border:1px solid var(--paper-3);border-radius:12px;padding:12px 16px;font-size:14px;font-family:'Inter',sans-serif;resize:none;height:52px;max-height:120px;outline:none;background:#fff;transition:border-color 0.15s;line-height:1.5;" oninput="autoResize(this)"></textarea>
+          <button onclick="sendChat()" style="background:var(--accent-2);color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(139,124,255,0.3);transition:background 0.15s;" onmouseover="this.style.background='var(--accent)'" onmouseout="this.style.background='var(--accent-2)'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div><!-- /app -->
+</div><!-- /appScreen -->
+
+<!-- AI 설정 모달 -->
+<div class="modal-overlay" id="aiModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">✦ AI 연결 설정</div>
+      <button class="modal-close" onclick="closeModal('aiModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>프로필 이름 <span style="font-weight:400;color:var(--ink-3)">(구분용, 예: Claude 작업용, 로컬 AI)</span></label>
+        <input type="text" id="aiProfileName" placeholder="예: Claude 작업용, 로컬 AI, GPT 빠른 답변…">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>AI 애칭</label>
+          <input type="text" id="aiNickname" placeholder="예: 지식이, 클로이… (기본값: AI)">
+        </div>
+        <div class="field">
+          <label>나를 부르는 말</label>
+          <input type="text" id="userName" placeholder="예: 소연님, 대표님… (기본값: 나)">
+        </div>
+      </div>
+      <div class="field">
+        <label>AI 방식 선택</label>
+        <select id="aiProvider" onchange="updateAIProviderUI()">
+          <option value="">— 선택해주세요 —</option>
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="gpt">GPT (OpenAI)</option>
+          <option value="ollama">로컬 AI (Ollama)</option>
+        </select>
+      </div>
+
+      <!-- Claude -->
+      <div id="aiSectionClaude" style="display:none" class="field">
+        <label>Claude API 키</label>
+        <input type="password" id="claudeKey" placeholder="sk-ant-...">
+        <div style="font-size:12px;color:var(--ink-3);margin-top:4px;">
+          <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent-2);">console.anthropic.com</a>에서 무료로 발급받을 수 있어요.
+        </div>
+      </div>
+
+      <!-- GPT -->
+      <div id="aiSectionGPT" style="display:none" class="field">
+        <label>OpenAI API 키</label>
+        <input type="password" id="gptKey" placeholder="sk-...">
+        <div style="font-size:12px;color:var(--ink-3);margin-top:4px;">
+          <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent-2);">platform.openai.com</a>에서 발급받을 수 있어요.
+        </div>
+      </div>
+
+      <!-- Ollama -->
+      <div id="aiSectionOllama" style="display:none;flex-direction:column;gap:12px;">
+        <div class="field">
+          <label>Ollama 모델</label>
+          <select id="ollamaModel">
+            <option value="qwen2.5:7b">qwen2.5:7b (추천, 한국어 강함)</option>
+            <option value="llama3.2">llama3.2 (램 4GB+)</option>
+            <option value="llama3.1">llama3.1 (램 8GB+)</option>
+            <option value="gemma2">gemma2 (램 8GB+)</option>
+            <option value="mistral">mistral (램 4GB+)</option>
+          </select>
+        </div>
+        <div style="background:var(--paper-2);border-radius:8px;padding:12px;font-size:12px;color:var(--ink-2);line-height:1.7;">
+          💡 Ollama가 없으면 <a href="https://ollama.com" target="_blank" style="color:var(--accent-2);">ollama.com</a>에서 무료 설치<br>
+          설치 후 터미널에서: <code style="background:#fff;padding:2px 6px;border-radius:4px;">ollama pull llama3.2</code>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('aiModal')">취소</button>
+      <button class="btn-primary" onclick="saveAISettings()">연결하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 냥냥코치 팝업 -->
+<div id="promoPopup" style="
+  position:fixed; bottom:24px; right:24px; z-index:300;
+  background:#fff; border-radius:16px;
+  box-shadow:0 8px 32px rgba(139,124,255,0.18);
+  border:1px solid var(--paper-3);
+  padding:20px 20px 18px; width:280px;
+  animation: slideUp 0.3s ease;
+">
+  <button onclick="closePromo()" style="
+    position:absolute; top:10px; right:12px;
+    background:none; border:none; cursor:pointer;
+    font-size:16px; color:var(--ink-3); line-height:1;
+  ">✕</button>
+  <div style="font-size:22px; margin-bottom:8px;">🐱</div>
+  <div style="font-weight:700; font-size:15px; margin-bottom:4px; color:var(--ink);">냥냥코치</div>
+  <div style="font-size:13px; color:var(--ink-2); margin-bottom:14px; line-height:1.5;">
+    이 앱을 만든 팀의 앱이에요.<br>관심 있으면 한번 눌러봐요 😊
+  </div>
+  <div style="display:flex; gap:8px;">
+    <a href="#" style="
+      flex:1; text-align:center;
+      background:#000; color:#fff;
+      padding:8px 0; border-radius:8px;
+      text-decoration:none; font-size:12px; font-weight:600;
+      transition:opacity 0.15s;
+    " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"> App Store</a>
+    <a href="#" style="
+      flex:1; text-align:center;
+      background:#01875f; color:#fff;
+      padding:8px 0; border-radius:8px;
+      text-decoration:none; font-size:12px; font-weight:600;
+      transition:opacity 0.15s;
+    " onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">▶ Google Play</a>
+  </div>
+</div>
+
+<style>
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalHeading">새 노트 추가</div>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field" style="flex:2">
+          <label>제목 / 소스 이름</label>
+          <input type="text" id="f-title" placeholder="예: 미드나잇 라이브러리, 코세라 ML 강의…">
+        </div>
+        <div class="field" style="flex:1">
+          <label>소스 유형</label>
+          <select id="f-type">
+            <option value="book">📚 책</option>
+            <option value="lecture">🎓 강의</option>
+            <option value="movie">🎬 영화</option>
+            <option value="podcast">🎙️ 팟캐스트</option>
+            <option value="youtube">▶️ 유튜브</option>
+            <option value="article">📰 아티클</option>
+            <option value="other">✨ 기타</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" style="flex:1">
+          <label>날짜</label>
+          <input type="text" id="f-date" placeholder="예: 2024-06-27">
+        </div>
+        <div class="field" style="flex:2">
+          <label>출처(링크)</label>
+          <input type="text" id="f-author" placeholder="예: 저자 이름 또는 https://youtube.com/...">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>발췌 / 인상 깊은 구절</label>
+        <textarea id="excerptField" placeholder="기억하고 싶은 문장이나 장면, 핵심 내용을 적어주세요…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>💭 느낀 점 / 생각 / 활용 아이디어</label>
+        <textarea id="f-thought" placeholder="이 내용을 보고 든 생각, 적용하고 싶은 점, 나만의 해석, 활용 아이디어…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>✅ 실천할 일 목록</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="action-todo-input" placeholder="실천할 행동 과제 입력... (예: 책 10페이지 읽기)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addActionTodo();}" style="flex:1;">
+          <button type="button" class="btn-ghost" onclick="addActionTodo()" style="flex-shrink:0; padding:10px 16px;">추가</button>
+        </div>
+        <div id="action-todo-list-edit" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
+      </div>
+
+      <div class="field">
+        <label>목적 / 태그 <span style="font-weight:400;color:var(--ink-3)">(Enter로 추가)</span></label>
+        <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagRawInput').focus()">
+          <input class="tag-inline-input" id="tagRawInput" placeholder="자기계발, 업무, 창의…" onkeydown="handleTagKey(event)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('addModal')">취소</button>
+      <button class="btn-primary" onclick="saveNote()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay detail-modal" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detail-title"></div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="detail-meta" style="font-size:13px;color:var(--ink-3);display:flex;gap:12px;flex-wrap:wrap"></div>
+      <div>
+        <div class="detail-section-label">발췌</div>
+        <div class="detail-excerpt" id="detail-excerpt"></div>
+      </div>
+      <div id="thought-section">
+        <div class="detail-section-label">💭 느낀 점 / 생각 / 활용 아이디어</div>
+        <div class="detail-thought" id="detail-thought" style="white-space:pre-wrap;"></div>
+      </div>
+      <div id="todo-section">
+        <div class="detail-section-label">✅ 실천할 일 목록</div>
+        <div id="detail-action-todos" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+      <div id="detail-tags" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <div class="detail-actions">
+        <button class="btn-primary" onclick="editNote()" style="display:inline-flex; align-items:center; gap:6px;">
+          <svg class="line-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          <span>수정</span>
+        </button>
+        <button class="btn-danger" onclick="deleteNote()">
+          <svg class="line-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+          <span>삭제</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 냥냥코치 소개/광고 모달 -->
+<div class="modal-overlay" id="nyangPromoModal" style="z-index: 300;">
+  <div class="modal" style="max-width: 480px; padding: 24px;">
+    <div class="modal-header" style="border:none; padding-bottom: 0;">
+      <button class="modal-close" onclick="closeModal('nyangPromoModal')">✕</button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding-top: 10px;">
+      <div style="width: 100px; height: 100px; margin: 0 auto 16px; border-radius: 50%; overflow: hidden; border: 3px solid #EAF7EE; box-shadow: 0 4px 12px rgba(110, 191, 139, 0.2);">
+        <img src="/nyang_cat.png" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <h3 style="font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">나만의 루틴 비서, 냥냥코치</h3>
+      <p style="font-size: 13.5px; color: var(--ink-2); line-height: 1.65; margin-bottom: 24px; padding: 0 10px;">
+        냥냥코치는 귀여운 고양이 코치 캐릭터와 함께 나만의 일상 루틴과 습관, 수면, 스케줄을 체계적으로 관리하는 해빗 트래커 앱입니다.<br><br>
+        Nyang Insight에서 계획한 <b>실천 과제</b>들을 모바일 냥냥코치로 전송하여 매일 일상 속에서 습관으로 실천해 보세요!
+      </p>
+      
+      <div style="font-size: 11px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">모바일 앱 다운로드</div>
+      <div style="display:flex; gap:10px; margin-bottom:24px;">
+        <a href="https://apps.apple.com" target="_blank" style="flex:1; text-align:center; background:#4a4a4a; color:#fff; padding:11px 0; border-radius:12px; text-decoration:none; font-size:12.5px; font-weight:600; transition:opacity 0.15s; display:flex; align-items:center; justify-content:center; gap:6px;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">🍏 App Store</a>
+        <a href="https://play.google.com" target="_blank" style="flex:1; text-align:center; background:#6EBF8B; color:#fff; padding:11px 0; border-radius:12px; text-decoration:none; font-size:12.5px; font-weight:600; transition:opacity 0.15s; display:flex; align-items:center; justify-content:center; gap:6px;" onmouseover="this.style.opacity=0.9" onmouseout="this.style.opacity=1">▶ Google Play</a>
+      </div>
+      
+      <div style="border-top: 1px dashed var(--paper-3); padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn-primary" onclick="closeModal('nyangPromoModal'); window.triggerNyangSignIn();" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 700;">🐱 냥냥코치 계정 연동하기</button>
+        <button class="btn-ghost" onclick="closeModal('nyangPromoModal')" style="width: 100%; padding: 10px; border-radius: 12px; font-size: 13px;">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 냥냥코치 개별 실천 전송 모달 -->
+<div class="modal-overlay" id="nyangSendModal" style="z-index: 300;">
+  <div class="modal" style="max-width: 480px;">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex; align-items:center; gap:10px;">
+        <img src="/nyang_logo.png" alt="" style="width:34px; height:34px; border-radius:10px; object-fit:cover; box-shadow:0 4px 10px rgba(109,85,245,0.14);">
+        <span>냥냥코치로 전송</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('nyangSendModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--paper); padding:12px; border-radius:12px; font-size:14px; line-height:1.5; color:var(--ink-2); font-weight:500;">
+        <span style="font-size:11px; font-weight:600; color:var(--ink-3); text-transform:uppercase; display:block; margin-bottom:4px;">전송할 실천 내용</span>
+        <span id="nyangSendTodoText" style="color:var(--ink);"></span>
+      </div>
+      
+      <div class="field" style="margin-top:8px;">
+        <label>실천할 날짜</label>
+        <input type="date" id="nyangSendTodoDate" style="border: 1.5px solid var(--paper-3); border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 14px; color: var(--ink); background: #FFFFFF; outline: none; width: 100%;">
+      </div>
+
+      <div class="field" style="margin-top:8px;">
+        <label>시간대 설정</label>
+        <div id="nyangSendTimeButtons" style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="nyang-send-time-btn active" data-type="none" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">시간 지정 안 함</button>
+          <button type="button" class="nyang-send-time-btn" data-type="single" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">특정 시간</button>
+          <button type="button" class="nyang-send-time-btn" data-type="range" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">시간 범위</button>
+          <button type="button" class="nyang-send-time-btn" data-type="duration" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">소요 시간</button>
+        </div>
+        <div id="nyangSendTimeInputs" style="margin-top:8px; font-size:12px; color:var(--ink-2);">
+        </div>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button class="btn-ghost" onclick="closeModal('nyangSendModal')">취소</button>
+        <button class="btn-primary" onclick="window.confirmNyangSend()">전송하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 소스 유형 추가 모달 -->
+<div class="modal-overlay" id="customSourceModal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title">✨ 소스 유형 추가</div>
+      <button class="modal-close" onclick="closeModal('customSourceModal')">✕</button>
+    </div>
+    <div class="modal-body" style="gap:12px;">
+      <div class="field" style="align-items: center;">
+        <label>이모지 (Emoji)</label>
+        <input type="text" id="newSourceEmoji" placeholder="✨" maxlength="2" style="font-size: 20px; text-align: center; width: 60px; padding: 6px;">
+      </div>
+      <div class="field">
+        <label>소스 유형 이름</label>
+        <input type="text" id="newSourceLabel" placeholder="예: 블로그, 회고, 세미나…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('customSourceModal')">취소</button>
+      <button class="btn-primary" onclick="saveCustomSourceType()">추가하기</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ─── Supabase는 사용자가 직접 입력 (initAuth에서 초기화) ───
+let _supabase = null;
+
+const DEFAULT_SOURCES = {
+  book:    { emoji:'📚', label:'책',       cls:'src-book' },
+  lecture: { emoji:'🎓', label:'강의',     cls:'src-lecture' },
+  movie:   { emoji:'🎬', label:'영화',     cls:'src-movie' },
+  podcast: { emoji:'🎙️', label:'팟캐스트', cls:'src-podcast' },
+  youtube: { emoji:'▶️', label:'유튜브',   cls:'src-youtube' },
+  article: { emoji:'📰', label:'아티클',   cls:'src-article' },
+  other:   { emoji:'✨', label:'기타',     cls:'src-other' },
+};
+
+const SVG_ICONS = {
+  all: `<svg class="line-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>`,
+  book: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
+  lecture: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path></svg>`,
+  movie: `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>`,
+  podcast: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"></path></svg>`,
+  youtube: `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>`,
+  article: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
+  other: `<svg class="line-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
+};
+
+function getLineIcon(key, fallbackEmoji = '✨') {
+  if (SVG_ICONS[key]) return SVG_ICONS[key];
+  return `<span class="fallback-emoji" style="font-size:16px; display:inline-block; vertical-align:middle; line-height:1;">${fallbackEmoji}</span>`;
+}
+
+let SOURCE = { ...DEFAULT_SOURCES };
+
+function loadCustomSources() {
+  const saved = localStorage.getItem('ci_custom_sources');
+  if (saved) {
+    try {
+      const custom = JSON.parse(saved);
+      SOURCE = { ...DEFAULT_SOURCES, ...custom };
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
+function saveCustomSources() {
+  const custom = {};
+  Object.keys(SOURCE).forEach(key => {
+    if (!DEFAULT_SOURCES[key]) {
+      custom[key] = SOURCE[key];
+    }
+  });
+  localStorage.setItem('ci_custom_sources', JSON.stringify(custom));
+}
+
+function renderSidebarSources() {
+  const list = document.getElementById('sidebarSourceTypeList');
+  if (!list) return;
+  list.innerHTML = Object.entries(SOURCE).map(([key, item]) => {
+    const active = currentFilter === key ? ' active' : '';
+    const count = notes.filter(n => n.type === key).length;
+    return `<button class="nav-btn${active}" data-filter="${key}" onclick="setFilter('${key}',this)">
+      <span class="icon">${getLineIcon(key, item.emoji)}</span> ${item.label} <span class="count">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function populateSourceTypeDropdown() {
+  const select = document.getElementById('f-type');
+  if (!select) return;
+  select.innerHTML = Object.entries(SOURCE).map(([key, item]) => {
+    return `<option value="${key}">${item.emoji} ${item.label}</option>`;
+  }).join('');
+}
+
+function openAddSourceTypeModal() {
+  document.getElementById('newSourceEmoji').value = '✨';
+  document.getElementById('newSourceLabel').value = '';
+  document.getElementById('customSourceModal').classList.add('open');
+}
+
+function saveCustomSourceType() {
+  const emoji = document.getElementById('newSourceEmoji').value.trim() || '✨';
+  const label = document.getElementById('newSourceLabel').value.trim();
+  if (!label) {
+    alert('소스 유형 이름을 입력해주세요.');
+    return;
+  }
+  const key = 'custom_' + Date.now();
+  SOURCE[key] = {
+    emoji: emoji,
+    label: label,
+    cls: 'src-other'
+  };
+  saveCustomSources();
+  renderSidebarSources();
+  populateSourceTypeDropdown();
+  closeModal('customSourceModal');
+  showToast('✨ 새 소스 유형이 추가되었어요!');
+}
+
+let notes = [];
+let currentFilter = 'all';
+let editingId = null;
+let viewingId = null;
+let currentTags = [];
+
+// ─── 서버 연결 ───
+async function initAuth() {
+  loadCustomSources();
+  populateSourceTypeDropdown();
+  try {
+    const res = await fetch('/api/notes');
+    if (!res.ok) throw new Error();
+    notes = await res.json();
+    showApp();
+    render();
+
+    // URL 파라미터에 noteId 또는 id가 있으면 해당 노트 상세 창 열기
+    const urlParams = new URLSearchParams(window.location.search);
+    const noteId = urlParams.get('id') || urlParams.get('noteId');
+    if (noteId) {
+      openDetail(noteId);
+    }
+  } catch(e) {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'flex';
+  updateAIStatus();
+  renderQuickSwitch();
+}
+
+// ─── 더미 (하위 호환) ───
+async function save() {
+  try {
+    await fetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(notes)
+    });
+  } catch(e) {
+    showToast('❌ 저장 실패. 서버를 확인해주세요.', 'error');
+  }
+}
+
+async function saveNote() {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { alert('제목을 입력해주세요.'); return; }
+  
+  const authorVal = document.getElementById('f-author').value.trim();
+  let author = '';
+  let link = '';
+  if (authorVal) {
+    if (isUrl(authorVal)) {
+      link = /^https?:\/\//i.test(authorVal) ? authorVal : 'https://' + authorVal;
+    } else {
+      author = authorVal;
+    }
+  }
+
+  const noteId = editingId || Date.now();
+  const noteDate = document.getElementById('f-date').value.trim() || today();
+
+  const note = {
+    id:      noteId,
+    title,
+    type:    document.getElementById('f-type').value,
+    excerpt: document.getElementById('excerptField').value.trim(),
+    thought: document.getElementById('f-thought').value.trim(),
+    idea:    '',
+    tags:    [...currentTags],
+    date:    document.getElementById('f-date').value.trim(),
+    author:  author,
+    link:    link,
+    actionTodos: [...editingActionTodos]
+  };
+  if (editingId) { notes = notes.map(n => n.id === editingId ? note : n); }
+  else           { notes.unshift(note); }
+  await save();
+  render(); closeModal('addModal');
+  showToast('✅ 저장됐어요!');
+}
+
+async function deleteNote() {
+  if (!confirm('이 노트를 삭제할까요?')) return;
+  notes = notes.filter(n => n.id !== viewingId);
+  await save();
+  render(); closeModal('detailModal');
+  showToast('🗑️ 삭제됐어요.');
+}
+
+function render() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const grid = document.getElementById('notesGrid');
+  const empty = document.getElementById('emptyState');
+
+  document.getElementById('cnt-all').textContent = notes.length;
+  renderSidebarSources();
+
+  let filtered = notes.filter(n => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter.startsWith('tag:')) return (n.tags||[]).includes(currentFilter.slice(4));
+    return n.type === currentFilter;
+  });
+  if (q) filtered = filtered.filter(n =>
+    n.title.toLowerCase().includes(q) ||
+    (n.excerpt||'').toLowerCase().includes(q) ||
+    (n.thought||'').toLowerCase().includes(q) ||
+    (n.tags || []).some(t => t.toLowerCase().includes(q))
+  );
+
+  const sort = document.getElementById('sortSelect').value;
+  if (sort === 'newest') filtered.sort((a,b) => b.id - a.id);
+  else if (sort === 'oldest') filtered.sort((a,b) => a.id - b.id);
+  else if (sort === 'title') filtered.sort((a,b) => a.title.localeCompare(b.title, 'ko'));
+
+  renderStats(filtered);
+  renderTagNav();
+
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = filtered.map(n => {
+    const src = SOURCE[n.type] || SOURCE.other;
+    const tags = (n.tags||[]).map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+    const excerpt = n.excerpt ? `<div class="note-excerpt">${escHtml(n.excerpt)}</div>` : '';
+    const thought = n.thought ? `<div class="note-thought">💭 ${escHtml(n.thought)}</div>` : '';
+    const sourceLink = n.link ? ` · <a href="${escHtml(n.link)}" target="_blank" onclick="event.stopPropagation();" style="color:var(--accent-2);text-decoration:underline;">🔗 바로가기</a>` : '';
+    return `
+      <div class="note-card" onclick="openDetail('${n.id}')">
+        <div class="note-header">
+          <div class="source-badge ${src.cls}">${getLineIcon(n.type, src.emoji)}</div>
+          <div class="note-meta">
+            <div class="note-title">${escHtml(n.title)}</div>
+            <div class="note-source-name">${src.label}${n.author ? ' · ' + escHtml(n.author) : ''}${sourceLink}</div>
+          </div>
+        </div>
+        ${excerpt}
+        ${thought}
+        <div class="note-footer">
+          ${tags}
+          <span class="note-date">${n.date || ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderStats(filtered) {
+  const row = document.getElementById('statsRow');
+  const total = filtered.length;
+  const types = [...new Set(filtered.map(n => n.type))].length;
+  const tagCount = new Set(filtered.flatMap(n => n.tags || [])).size;
+
+  // 전체 노트 수 기준으로 배너 표시 여부 결정
+  const banner = document.getElementById('heroBanner');
+  if (banner) {
+    banner.style.display = (currentFilter === 'all' && !document.getElementById('searchInput').value.trim()) ? 'flex' : 'none';
+  }
+
+  row.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon-wrap notes-icon"><svg class="line-icon" viewBox="0 0 24 24" style="width:20px; height:20px; stroke-width:2.2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div>
+      <div>
+        <div class="stat-val">${total}</div>
+        <div class="stat-lbl">노트</div>
+        <div class="stat-sub">전체 저장된 노트 수</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap type-icon"><svg class="line-icon" viewBox="0 0 24 24" style="width:20px; height:20px; stroke-width:2.2px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
+      <div>
+        <div class="stat-val">${types}</div>
+        <div class="stat-lbl">소스 유형</div>
+        <div class="stat-sub">연결된 자료 카테고리</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap tag-icon"><svg class="line-icon" viewBox="0 0 24 24" style="width:20px; height:20px; stroke-width:2.2px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></div>
+      <div>
+        <div class="stat-val">${tagCount}</div>
+        <div class="stat-lbl">태그</div>
+        <div class="stat-sub">사용 중인 태그 수</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrap insight-icon"><svg class="line-icon" viewBox="0 0 24 24" style="width:20px; height:20px; stroke-width:2.2px;"><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 16l-1.7-5L6 9.3l4.3-1.7L12 3z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"></path></svg></div>
+      <div>
+        <div class="stat-val">${Math.max(total + tagCount, total)}</div>
+        <div class="stat-lbl">인사이트</div>
+        <div class="stat-sub">AI가 발견한 인사이트</div>
+      </div>
+    </div>
+  `;
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  let label = '노트';
+  if (f === 'all') label = '전체 노트';
+  else if (f.startsWith('tag:')) label = `<span style="display:inline-flex; align-items:center; gap:6px;"><svg class="line-icon" viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> ${escHtml(f.slice(4))}</span>`;
+  else if (SOURCE[f]) label = `<span style="display:inline-flex; align-items:center; gap:6px;">${getLineIcon(f, SOURCE[f].emoji)} ${SOURCE[f].label}</span>`;
+  document.getElementById('pageTitle').innerHTML = label;
+  render();
+}
+
+function renderTagNav() {
+  const tagMap = {};
+  notes.forEach(n => (n.tags||[]).forEach(t => { tagMap[t] = (tagMap[t]||0) + 1; }));
+  const tags = Object.entries(tagMap).sort((a,b) => b[1]-a[1]);
+  const label = document.getElementById('tagNavLabel');
+  const list  = document.getElementById('tagNavList');
+  if (!tags.length) { label.style.display = 'none'; list.innerHTML = ''; return; }
+  label.style.display = '';
+  list.innerHTML = tags.map(([t, cnt]) => {
+    const active = currentFilter === 'tag:' + t ? ' active' : '';
+    return `<button class="nav-btn${active}" onclick="setFilter('tag:${escAttr(t)}',this)">
+      <span class="icon"><svg class="line-icon" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span> ${escHtml(t)} <span class="count">${cnt}</span>
+    </button>`;
+  }).join('');
+}
+
+function openAddModal(note = null) {
+  editingId = note ? note.id : null;
+  currentTags = note ? [...(note.tags || [])] : [];
+  document.getElementById('modalHeading').textContent = note ? '노트 수정' : '새 노트 추가';
+  document.getElementById('f-title').value      = note ? note.title   : '';
+  document.getElementById('f-type').value       = note ? note.type    : 'book';
+  document.getElementById('excerptField').value = note ? (note.excerpt||'') : '';
+  document.getElementById('f-thought').value    = note ? (note.thought||'') : '';
+  document.getElementById('f-date').value       = note ? (note.date||'') : today();
+  document.getElementById('f-author').value     = note ? (note.link || note.author || '') : '';
+  
+  editingActionTodos = note ? [...(note.actionTodos || [])] : [];
+  renderActionTodoListEdit();
+
+  renderTagChips();
+  document.getElementById('addModal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 50);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openDetail(id) {
+  const n = notes.find(n => String(n.id) === String(id));
+  if (!n) return;
+  viewingId = n.id;
+  const src = SOURCE[n.type] || SOURCE.other;
+  document.getElementById('detail-title').textContent = n.title;
+  document.getElementById('detail-meta').innerHTML = `
+    <span style="display:inline-flex; align-items:center; gap:4px;">${getLineIcon(n.type, src.emoji)} ${src.label}</span>
+    ${n.author ? `<span>저자/출처: ${escHtml(n.author)}</span>` : ''}
+    ${n.link ? `<span>출처: <a href="${escHtml(n.link)}" target="_blank" style="color:var(--accent-2);text-decoration:underline;">🔗 바로가기</a></span>` : ''}
+    ${n.date ? `<span>📅 ${n.date}</span>` : ''}
+  `;
+  document.getElementById('detail-excerpt').textContent = n.excerpt || '(발췌 없음)';
+  const ts = document.getElementById('thought-section');
+  if (n.thought) { ts.style.display = ''; document.getElementById('detail-thought').textContent = n.thought; }
+  else ts.style.display = 'none';
+
+  const todoSec = document.getElementById('todo-section');
+  const todoListDiv = document.getElementById('detail-action-todos');
+  if (todoSec && todoListDiv) {
+    const todos = n.actionTodos || [];
+    if (todos.length > 0) {
+      todoSec.style.display = '';
+      todoListDiv.innerHTML = todos.map((todo, idx) => `
+        <div style="display:flex; align-items:center; justify-content:space-between; background:var(--paper); padding:10px 14px; border-radius:12px; font-size:13.5px; border:1px solid var(--paper-3);">
+          <span style="font-weight:500;">${idx + 1}. ${escHtml(todo)}</span>
+          <button type="button" onclick="window.openNyangSendModal('${escAttr(todo)}', ${n.id})" style="background:var(--accent-tag); color:white; border:none; padding:5px 12px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; transition:background 0.15s;" onmouseover="this.style.background='#5CAE7A'" onmouseout="this.style.background='var(--accent-tag)'">
+            <img src="/nyang_logo.png" alt="" style="width:14px; height:14px; border-radius:4px; object-fit:cover;"> 전송
+          </button>
+        </div>
+      `).join('');
+    } else {
+      todoSec.style.display = 'none';
+      todoListDiv.innerHTML = '';
+    }
+  }
+  document.getElementById('detail-tags').innerHTML = (n.tags||[]).map(t=>`<span class="tag">${escHtml(t)}</span>`).join('');
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function editNote() {
+  const n = notes.find(n => n.id === viewingId);
+  closeModal('detailModal');
+  setTimeout(() => openAddModal(n), 150);
+}
+
+function handleTagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const v = e.target.value.trim().replace(/,$/, '');
+    if (v && !currentTags.includes(v)) { currentTags.push(v); renderTagChips(); }
+    e.target.value = '';
+  }
+  if (e.key === 'Backspace' && !e.target.value && currentTags.length) {
+    currentTags.pop(); renderTagChips();
+  }
+}
+
+function removeTag(t) { currentTags = currentTags.filter(x => x !== t); renderTagChips(); }
+
+function renderTagChips() {
+  const wrap = document.getElementById('tagWrap');
+  const input = document.getElementById('tagRawInput');
+  wrap.innerHTML = '';
+  currentTags.forEach(t => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${escHtml(t)}<button onclick="removeTag('${escAttr(t)}')" type="button">×</button>`;
+    wrap.appendChild(chip);
+  });
+  wrap.appendChild(input);
+}
+
+function today() { return new Date().toISOString().slice(0,10); }
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) { return String(s).replace(/'/g,"\\'"); }
+function isUrl(str) {
+  str = str.trim();
+  if (/^https?:\/\//i.test(str)) return true;
+  return /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}(\/\S*)?$/i.test(str);
+}
+
+// ─── 실천할 일 목록 추가/삭제 편집 UX ───
+let editingActionTodos = [];
+
+function addActionTodo() {
+  const input = document.getElementById('action-todo-input');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  
+  editingActionTodos.push(val);
+  input.value = '';
+  renderActionTodoListEdit();
+}
+
+function removeActionTodo(index) {
+  editingActionTodos.splice(index, 1);
+  renderActionTodoListEdit();
+}
+
+function renderActionTodoListEdit() {
+  const listDiv = document.getElementById('action-todo-list-edit');
+  if (!listDiv) return;
+  
+  listDiv.innerHTML = editingActionTodos.map((todo, idx) => `
+    <div style="display:flex; align-items:center; justify-content:space-between; background:var(--paper); padding:8px 12px; border-radius:8px; font-size:13px; border:1px solid var(--paper-3);">
+      <span>${idx + 1}. ${escHtml(todo)}</span>
+      <button type="button" onclick="removeActionTodo(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:600; font-size:11px;">삭제</button>
+    </div>
+  `).join('');
+}
+
+['addModal','detailModal','customSourceModal'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
+});
+
+function showToast(msg, type='success') {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:999;
+    background:${type==='error'?'#c0392b':'#2d6a4f'};color:#fff;
+    padding:12px 24px;border-radius:10px;font-size:14px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.2);white-space:nowrap;`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ─── 탭 전환 ───
+function switchTab(tab) {
+  const isChat = tab === 'chat';
+  const activeBg = 'linear-gradient(135deg,#7F68FF 0%,#654DF1 100%)';
+  const inactiveBg = '#fff';
+  const inactiveColor = 'var(--ink)';
+  const inactiveBorder = '1px solid var(--paper-3)';
+  const activeBorder = '1px solid transparent';
+  const tabNotes = document.getElementById('tabNotes');
+  const tabChat = document.getElementById('tabChat');
+  document.getElementById('screenNotes').style.display = isChat ? 'none' : '';
+  document.getElementById('screenChat').style.display  = isChat ? 'flex' : 'none';
+  document.getElementById('sidebarNotes').style.display = isChat ? 'none' : '';
+  document.getElementById('sidebarChat').style.display  = isChat ? 'flex' : 'none';
+  tabNotes.style.background = isChat ? inactiveBg : activeBg;
+  tabNotes.style.color = isChat ? inactiveColor : '#fff';
+  tabNotes.style.border = isChat ? inactiveBorder : activeBorder;
+  tabChat.style.background = isChat ? activeBg : inactiveBg;
+  tabChat.style.color = isChat ? '#fff' : inactiveColor;
+  tabChat.style.border = isChat ? activeBorder : inactiveBorder;
+}
+
+// ─── AI 설정 (멀티 프로필) ───
+let aiProfiles = JSON.parse(localStorage.getItem('ci_ai_profiles') || '[]');
+let aiConfig = aiProfiles.find(p => p.active) || null;
+
+function openAISettings(profileId = null) {
+  const p = profileId ? aiProfiles.find(p => p.id === profileId) : null;
+  document.getElementById('aiProfileName').value = p ? (p.profileName || '') : '';
+  document.getElementById('aiNickname').value    = p ? (p.nickname || '') : '';
+  document.getElementById('userName').value      = p ? (p.userName || '') : '';
+  document.getElementById('aiProvider').value    = p ? (p.provider || '') : '';
+  document.getElementById('claudeKey').value     = (p && p.provider === 'claude') ? (p.key || '') : '';
+  document.getElementById('gptKey').value        = (p && p.provider === 'gpt')    ? (p.key || '') : '';
+  document.getElementById('ollamaModel').value   = p ? (p.model || 'llama3.2') : 'llama3.2';
+  document.getElementById('aiModal')._editId     = p ? p.id : null;
+  updateAIProviderUI();
+  document.getElementById('aiModal').classList.add('open');
+}
+
+function updateAIProviderUI() {
+  const p = document.getElementById('aiProvider').value;
+  document.getElementById('aiSectionClaude').style.display = p === 'claude' ? '' : 'none';
+  document.getElementById('aiSectionGPT').style.display    = p === 'gpt'    ? '' : 'none';
+  document.getElementById('aiSectionOllama').style.display = p === 'ollama' ? 'flex' : 'none';
+}
+
+function saveAISettings() {
+  const provider = document.getElementById('aiProvider').value;
+  if (!provider) { alert('AI 방식을 선택해주세요.'); return; }
+  const editId = document.getElementById('aiModal')._editId;
+  const profile = {
+    id:          editId || Date.now(),
+    profileName: document.getElementById('aiProfileName').value.trim() || provider,
+    nickname:    document.getElementById('aiNickname').value.trim() || 'AI',
+    userName:    document.getElementById('userName').value.trim() || '나',
+    provider,
+    key:   provider === 'claude' ? document.getElementById('claudeKey').value.trim()
+         : provider === 'gpt'    ? document.getElementById('gptKey').value.trim() : '',
+    model: provider === 'ollama' ? document.getElementById('ollamaModel').value : '',
+    active: true,
+  };
+  aiProfiles = aiProfiles.map(p => ({ ...p, active: false }));
+  if (editId) { aiProfiles = aiProfiles.map(p => p.id === editId ? profile : p); }
+  else        { aiProfiles.push(profile); }
+  localStorage.setItem('ci_ai_profiles', JSON.stringify(aiProfiles));
+  aiConfig = profile;
+  updateAIStatus();
+  renderQuickSwitch();
+  closeModal('aiModal');
+  showToast('✅ 저장됐어요!');
+}
+
+function switchProfile(id) {
+  aiProfiles = aiProfiles.map(p => ({ ...p, active: p.id === id }));
+  localStorage.setItem('ci_ai_profiles', JSON.stringify(aiProfiles));
+  aiConfig = aiProfiles.find(p => p.id === id);
+  updateAIStatus();
+  renderQuickSwitch();
+  showToast('✅ ' + aiConfig.profileName + '으로 전환됐어요!');
+}
+
+function renderQuickSwitch() {
+  const wrap = document.getElementById('aiQuickSwitch');
+  if (!wrap) return;
+  if (!aiProfiles.length) {
+    wrap.innerHTML = '<div style="font-size:11px;color:var(--ink-3);padding:4px 12px;">저장된 AI 없음</div>';
+    return;
+  }
+  wrap.innerHTML = aiProfiles.map(p => `
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button onclick="switchProfile(${p.id})" style="
+        flex:1;text-align:left;
+        background:${p.active ? 'linear-gradient(135deg,#7F68FF 0%,#654DF1 100%)' : '#fff'};
+        color:${p.active ? '#fff' : 'var(--ink)'};
+        border:${p.active ? '1px solid transparent' : '1px solid var(--paper-3)'};border-radius:8px;padding:7px 10px;
+        font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;
+      ">${p.active ? '✦ ' : ''}${p.profileName}</button>
+      <button onclick="openAISettings(${p.id})" style="
+        background:#fff;border:1px solid var(--paper-3);color:var(--ink-2);
+        border-radius:8px;padding:7px 8px;cursor:pointer;font-size:11px;
+      ">✏️</button>
+    </div>
+  `).join('');
+}
+
+function updateAIStatus() {
+  const badge = document.getElementById('aiStatusBadge');
+  const label = document.getElementById('aiModelLabel');
+  if (!aiConfig) {
+    if (badge) badge.innerHTML = '<span style="color:#888;">연결 안 됨</span>';
+    if (label) label.textContent = 'AI 미연결 — 설정에서 연결해주세요';
+    return;
+  }
+  const names = { 
+    claude: 'Claude (Anthropic)', 
+    gpt: 'GPT (OpenAI)', 
+    ollama: '로컬 AI (Ollama)' 
+  };
+  const providerName = names[aiConfig.provider];
+  const checkIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-tag)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; margin-right:4px; display:inline-block; vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  
+  if (badge) {
+    badge.innerHTML = `<span style="display:inline-flex; align-items:center; color:var(--accent-tag); font-weight:600;">${checkIconSvg}${providerName}</span>`;
+  }
+  if (label) {
+    label.innerHTML = `<span style="display:inline-flex; align-items:center; color:var(--ink-2); font-weight:500;">${checkIconSvg}${providerName} 연결됨</span>`;
+  }
+}
+
+// ─── AI 채팅 ───
+let chatHistory = [];
+let isChatSending = false;
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+function autoResize(el) {
+  el.style.height = '52px';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function formatMarkdown(text) {
+  let html = escHtml(text);
+  
+  // 1. Remove horizontal rule markdown lines (e.g. ***, ---, ___ on their own line)
+  html = html.replace(/^\s*(\*|-|_){3,}\s*$/gm, '');
+  
+  // 2. Format bold markdown (**text** or __text__)
+  html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__([^__]+)__/g, '<strong>$1</strong>');
+  
+  // 3. Format italic markdown (*text* or _text_)
+  html = html.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+  html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+  
+  return html;
+}
+
+function addChatBubble(role, text, isLoading=false, userName='나', nickname='AI') {
+  const wrap = document.getElementById('chatMessages');
+  const isUser = role === 'user';
+  if (isLoading) removeLoadingBubbles();
+  const div = document.createElement('div');
+  div.style.cssText = `display:flex;flex-direction:column;align-items:${isUser?'flex-end':'flex-start'};gap:4px;`;
+  if (isLoading) div.className = 'chat-loading-bubble';
+  div.innerHTML = `
+    <div style="font-size:11px;color:var(--ink-3);">${isUser ? userName : nickname}</div>
+    <div style="
+      max-width:75%;background:${isUser?'var(--accent-2)':'#fff'};
+      color:${isUser?'#fff':'var(--ink)'};
+      border-radius:${isUser?'16px 16px 4px 16px':'16px 16px 16px 4px'};
+      padding:12px 16px;font-size:14px;line-height:1.65;
+      border:${isUser?'none':'1px solid var(--paper-3)'};
+      white-space:pre-wrap;
+    ">${isLoading ? '<span id="loadingDots">생각 중…</span>' : formatMarkdown(text)}</div>
+  `;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+  return div;
+}
+
+function removeLoadingBubbles() {
+  document.querySelectorAll('.chat-loading-bubble, #loadingBubble').forEach(el => el.remove());
+}
+
+function clearChat() {
+  chatHistory = [];
+  const wrap = document.getElementById('chatMessages');
+  wrap.innerHTML = `<div style="text-align:center;color:var(--ink-3);padding:60px 20px;">
+    <div style="width:72px;height:72px;background:var(--paper-2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 2px 12px rgba(139,124,255,0.15);">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+    </div>
+    <div style="font-weight:600;font-size:16px;color:var(--ink-2);margin-bottom:10px;">AI에게 노트 기반으로 물어보세요</div>
+    <div style="font-size:13px;line-height:1.9;color:var(--ink-3);">
+      "글쓰기 고민하는 친구한테 뭐라고 조언해줄까?" <br>
+      "요즘 번아웃인데 내가 기록한 것 중에 도움될 게 있을까?" <br>
+      "내가 배운 것들로 새로운 아이디어 뽑아줘"
+    </div>
+  </div>`;
+}
+
+window.clickSuggestionChip = (text) => {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  input.value = text;
+  sendChat();
+};
+
+async function sendChat() {
+  if (!aiConfig) { openAISettings(); return; }
+  if (isChatSending) return;
+  const input = document.getElementById('chatInput');
+  const q = input.value.trim();
+  if (!q || q.length === 0) return;
+  isChatSending = true;
+  input.value = ''; input.style.height = '52px';
+
+  const nickname = aiConfig.nickname || 'AI';
+  const userName = aiConfig.userName || '나';
+
+  addChatBubble('user', q, false, userName);
+  chatHistory.push({ role: 'user', content: q });
+
+  // ─── 스마트 노트 필터링 ───
+  const qWords = q.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+
+  function scoreNote(n) {
+    let score = 0;
+    const fields = [n.title, n.excerpt, n.thought, n.idea, ...(n.tags||[])].map(f => (f||'').toLowerCase());
+    const fullText = fields.join(' ');
+
+    // 키워드 매칭 (제목/태그는 가중치 높게)
+    qWords.forEach(w => {
+      if ((n.title||'').toLowerCase().includes(w)) score += 4;
+      if ((n.tags||[]).some(t => t.toLowerCase().includes(w))) score += 3;
+      if ((n.excerpt||'').toLowerCase().includes(w)) score += 2;
+      if ((n.thought||'').toLowerCase().includes(w)) score += 1;
+      if ((n.idea||'').toLowerCase().includes(w)) score += 1;
+    });
+
+    // 태그가 많을수록 보너스
+    score += (n.tags||[]).length * 0.1;
+
+    return score;
+  }
+
+  // 점수 기반 정렬 후 상위 15개 선택 (점수 0이어도 최소 5개는 포함)
+  const scored = notes.map(n => ({ n, score: scoreNote(n) })).sort((a,b) => b.score - a.score);
+  const relevant = scored.filter(x => x.score > 0).slice(0, 15).map(x => x.n);
+  const fallback = scored.slice(0, 5).map(x => x.n);
+  const selectedNotes = relevant.length >= 3 ? relevant : [...new Set([...relevant, ...fallback])].slice(0, 10);
+
+  const noteSummary = selectedNotes.length > 0
+    ? selectedNotes.map(n =>
+        `[${n.title}] (${n.type}${n.author ? ', ' + n.author : ''})\n발췌: ${n.excerpt||''}\n느낀점: ${n.thought||''}\n활용아이디어: ${n.idea||''}\n태그: ${(n.tags||[]).join(', ')}`
+      ).join('\n\n---\n\n')
+    : '(아직 저장된 노트가 없어요)';
+
+  const systemPrompt = `당신은 개인 지식 에이전트입니다. 사용자는 책, 영화, 강의 및 개인적인 통찰력을 기록합니다. 당신의 역할은 단순히 노트를 검색하는 것이 아니라, 노트들을 적극적으로 연결하고 패턴을 찾아내며 새로운 통찰을 이끌어내는 것입니다.
+
+엄격한 규칙:
+- 반드시 한국어로만 답변하세요.
+- 한자, 한문, 중국어 표현은 절대 사용하지 마세요. 예: 的, 是, 在, 我, 你, 了, 和, 这, 那 같은 문자를 쓰면 안 됩니다.
+- 한국어 단어도 한자가 아니라 한글로만 쓰세요. 예: 情報가 아니라 정보, 知識이 아니라 지식.
+- 이모지나 이모티콘은 절대 사용하지 마세요.
+- 제공된 노트 목록에 없는 허구의 내용을 지어내지 마세요.
+- 불필요한 인사말, 칭찬, 쓸데없는 미사여구는 생략하세요.
+- 간결하고 명확하며 실용적으로 답변하세요.
+
+답변 방법:
+1. 패턴 발견: 여러 노트에서 반복되는 주제, 모순 또는 보완적인 아이디어를 찾으세요. 사용자가 스스로 인지하지 못한 점을 짚어주세요.
+2. 아이디어 연결: 두 개 이상의 노트가 질문과 관련이 있다면 서로 연결하세요. "사용자님의 [A] 노트와 [B] 노트는 같은 맥락의 이야기를 하고 있습니다:"
+3. 새로운 통찰 도출: 노트를 단순히 요약하거나 나열하지 마세요. 노트들을 융합하여 사용자가 명시적으로 작성하지 않은 새로운 시각이나 실행 전략을 제시하세요.
+4. 구체성 유지: 막연한 조언 대신 즉시 실행 가능한 구체적인 행동을 알려주세요. (예: "더 많이 쓰세요" 대신 "매일 아침 200단어씩 글을 쓰세요")
+5. 솔직한 출처 인용: 노트를 인용할 때는 "[제목]에서:" 형식을 사용하세요. 만약 관련된 노트가 없다면 "관련 노트가 없지만,"이라고 밝히고 일반적이고 실용적인 답변을 제공하세요.
+6. 실행 우선: 마지막에는 사용자가 자신의 지식을 바탕으로 즉시 실행할 수 있는 구체적인 행동 1~3가지를 제시하세요.
+
+=== 사용자의 노트 (${selectedNotes.length}개 선택됨) ===
+${noteSummary}`;
+
+  removeLoadingBubbles();
+  addChatBubble('ai', '', true, userName, nickname);
+
+  try {
+    let reply = '';
+    if (aiConfig.provider === 'claude') {
+      reply = await callClaude(systemPrompt, chatHistory);
+    } else if (aiConfig.provider === 'gpt') {
+      reply = await callGPT(systemPrompt, chatHistory);
+    } else if (aiConfig.provider === 'ollama') {
+      reply = await callOllama(systemPrompt, chatHistory);
+    }
+    reply = await ensureHangulKoreanReply(systemPrompt, chatHistory, reply);
+    removeLoadingBubbles();
+    addChatBubble('ai', reply, false, userName, nickname);
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    removeLoadingBubbles();
+    addChatBubble('ai', '오류가 발생했어요: ' + e.message + '\nAI 설정을 확인해주세요.', false, userName, nickname);
+  } finally {
+    isChatSending = false;
+  }
+}
+
+function hasCjkIdeographs(text) {
+  return /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/.test(text || '');
+}
+
+async function ensureHangulKoreanReply(systemPrompt, history, reply) {
+  if (!hasCjkIdeographs(reply)) return reply;
+  const rewriteInstruction = '방금 답변에 한자 또는 중국어 문자가 섞였습니다. 같은 의미를 자연스러운 한국어 한글 문장으로만 다시 작성하세요. 한자, 중국어, 일본어 문자는 절대 쓰지 마세요. 이모지도 쓰지 마세요.';
+  const rewriteHistory = [
+    ...history,
+    { role: 'assistant', content: reply },
+    { role: 'user', content: rewriteInstruction }
+  ];
+  try {
+    if (aiConfig.provider === 'claude') return await callClaude(systemPrompt, rewriteHistory);
+    if (aiConfig.provider === 'gpt') return await callGPT(systemPrompt, rewriteHistory);
+    if (aiConfig.provider === 'ollama') return await callOllama(systemPrompt, rewriteHistory);
+  } catch (e) {
+    console.warn('Korean rewrite failed', e);
+  }
+  return reply;
+}
+
+async function callClaude(system, history) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': aiConfig.key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1000,
+      system,
+      messages: history
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content[0].text;
+}
+
+async function callGPT(system, history) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + aiConfig.key
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'system', content: system }, ...history]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.choices[0].message.content;
+}
+
+async function callOllama(system, history) {
+  const koreanOnlyReminder = {
+    role: 'system',
+    content: '출력은 반드시 한국어 한글 문장으로만 작성하세요. 한자, 중국어, 일본어 문자와 이모지는 절대 출력하지 마세요.'
+  };
+  const res = await fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: aiConfig.model || 'llama3.2',
+      stream: false,
+      messages: [{ role: 'system', content: system }, koreanOnlyReminder, ...history],
+      options: {
+        temperature: 0.4,
+        repeat_penalty: 1.08
+      }
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.message.content;
+}
+
+window.sendChat = sendChat;
+window.handleChatKey = handleChatKey;
+window.autoResize = autoResize;
+window.clearChat = clearChat;
+// ─── 냥냥코치 팝업 ───
+function closePromo() {
+  const p = document.getElementById('promoPopup');
+  if (p) { p.style.opacity='0'; p.style.transform='translateY(16px)'; p.style.transition='opacity 0.2s,transform 0.2s'; setTimeout(()=>p.remove(),200); }
+  localStorage.setItem('promoClosedAt', Date.now());
+}
+(function() {
+  const closed = localStorage.getItem('promoClosedAt');
+  if (closed && Date.now() - Number(closed) < 24*60*60*1000) {
+    const p = document.getElementById('promoPopup');
+    if (p) p.remove();
+  }
+})();
+
+initAuth();
+</script>
+
+<!-- Firebase / Nyang Coach Integration Module -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCtLd3LyBGnVM38dSXLgJBtGwKma6Lqygs",
+    authDomain: "nyangcoach.firebaseapp.com",
+    projectId: "nyangcoach",
+    storageBucket: "nyangcoach.firebasestorage.app",
+    messagingSenderId: "912621917226",
+    appId: "1:912621917226:web:76cca3bc8aa5adb0c69f53",
+    measurementId: "G-854Q6YXS8Y"
+  };
+
+  const nyangApp = initializeApp(firebaseConfig, "nyangcoach");
+  const nyangAuth = getAuth(nyangApp);
+  const nyangDb = getFirestore(nyangApp);
+  const provider = new GoogleAuthProvider();
+
+  window.nyangAuth = nyangAuth;
+  window.nyangDb = nyangDb;
+
+  onAuthStateChanged(nyangAuth, (user) => {
+    const btn = document.getElementById('btnNyangLogin');
+    const sendBtn = document.getElementById('sendToNyangBtn');
+    const promoCard = document.getElementById('nyangPromoCard');
+    if (user) {
+      const display = user.displayName || '연동됨';
+      if (btn) btn.innerHTML = `<span class="icon" style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;"><img src="/nyang_cat.png" style="width:20px; height:20px; border-radius:50%; object-fit:cover; border:1.5px solid #ffffff;"></span> ${display}`;
+      if (sendBtn) sendBtn.style.display = 'block';
+      if (promoCard) promoCard.style.display = 'none';
+    } else {
+      if (btn) btn.innerHTML = `<span class="icon" style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;"><img src="/nyang_logo.png" style="width:20px; height:20px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.15);"></span> 냥냥코치 연동`;
+      if (sendBtn) sendBtn.style.display = 'none';
+      if (promoCard) promoCard.style.display = 'block';
+    }
+  });
+
+  window.openNyangPromoModal = () => {
+    const modal = document.getElementById('nyangPromoModal');
+    if (modal) modal.classList.add('open');
+  };
+
+  window.triggerNyangSignIn = async () => {
+    try {
+      await signInWithPopup(nyangAuth, provider);
+      showToast('🐱 냥냥코치 연동 성공!');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ 연동 실패: ' + e.message, 'error');
+    }
+  };
+
+  window.toggleNyangLogin = async () => {
+    if (nyangAuth.currentUser) {
+      if (confirm('냥냥코치 연동을 해제할까요?')) {
+        await signOut(nyangAuth);
+        showToast('🐱 연동이 해제되었어요.');
+      }
+    } else {
+      window.openNyangPromoModal();
+    }
+  };
+
+  window.shareApp = () => {
+    const shareText = `Nyang Insight 🐱
+흩어진 지식을 모아 나만의 아카이브로 정리하고, AI가 새로운 인사이트까지 연결해주는 개인 지식 공간이에요.
+
+설치/실행 방법
+1. 아래 링크에서 앱 파일을 다운로드해 압축을 풀어주세요.
+2. Mac은 "실행.command", Windows는 "실행(윈도우).bat" 파일을 더블클릭해 서버를 실행해요.
+3. 브라우저에서 http://localhost:8000 을 열면 바로 사용할 수 있어요.
+
+무료 다운로드: https://github.com/isoyeon/clearinsight`;
+    navigator.clipboard.writeText(shareText).then(() => {
+      showToast('🐱 공유 링크가 클립보드에 복사되었어요!');
+    }).catch((err) => {
+      console.error(err);
+      showToast('❌ 복사에 실패했어요.', 'error');
+    });
+  };
+
+  window.sendIdeaDirect = async (ideaText, noteId, noteDate, timeData = null) => {
+    const user = nyangAuth.currentUser;
+    if (!user || !ideaText) return;
+
+    const taskDate = noteDate || today();
+    const isToday = (taskDate === today());
+
+    // noteId가 있다면, PC 로컬 서버 주소 기반의 deep link를 생성하여 텍스트에 포함
+    let taskText = `[아이디어] ${ideaText}`;
+    if (noteId) {
+      taskText += ` (노트: http://localhost:8000/?id=${noteId})`;
+    }
+
+    const time = timeData ? timeData.time : null;
+    const timeStart = timeData ? timeData.timeStart : null;
+    const timeEnd = timeData ? timeData.timeEnd : null;
+    const duration = timeData ? timeData.duration : null;
+
+    try {
+      if (isToday) {
+        // ─── 오늘 날짜면 '할 일(tasks)'에 등록 ───
+        // 1. 네이티브 모바일 앱 (users/{uid}/appData/nyang_tasks)
+        const nativeDocRef = doc(nyangDb, 'users', user.uid, 'appData', 'nyang_tasks');
+        const nativeDocSnap = await getDoc(nativeDocRef);
+        let nativeTasks = [];
+        if (nativeDocSnap.exists()) {
+          const valStr = nativeDocSnap.data().value;
+          if (valStr) {
+            try { nativeTasks = JSON.parse(valStr); } catch(e) { console.error(e); }
+          }
+        }
+        const newNativeTask = {
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          text: taskText,
+          category: 'today',
+          done: false,
+          isHabit: false,
+          isReminderEnabled: true,
+          deferredCount: 0,
+          createdAt: new Date().toISOString(),
+          time,
+          timeStart,
+          timeEnd,
+          duration
+        };
+        nativeTasks.push(newNativeTask);
+        await setDoc(nativeDocRef, { value: JSON.stringify(nativeTasks), updatedAt: new Date().toISOString() }, { merge: true });
+
+        // 2. 웹앱 (users/{uid}/data/tasks)
+        const webDocRef = doc(nyangDb, 'users', user.uid, 'data', 'tasks');
+        const webDocSnap = await getDoc(webDocRef);
+        let webTasks = [];
+        if (webDocSnap.exists()) {
+          const content = webDocSnap.data().content;
+          webTasks = Array.isArray(content) ? content : (typeof content === 'string' ? JSON.parse(content) : []);
+        }
+        const newWebTask = {
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          text: taskText,
+          category: 'daily',
+          done: false,
+          createdAt: new Date().toISOString(),
+          time,
+          timeStart,
+          timeEnd,
+          duration
+        };
+        webTasks.push(newWebTask);
+        await setDoc(webDocRef, { content: webTasks, updatedAt: new Date().toISOString() }, { merge: true });
+
+      } else {
+        // ─── 미래 날짜면 '일정(schedules)'에 등록 ───
+        // 1. 네이티브 모바일 앱 (users/{uid}/appData/nyang_schedules)
+        const nativeDocRef = doc(nyangDb, 'users', user.uid, 'appData', 'nyang_schedules');
+        const nativeDocSnap = await getDoc(nativeDocRef);
+        let nativeSchedules = {};
+        if (nativeDocSnap.exists()) {
+          const valStr = nativeDocSnap.data().value;
+          if (valStr) {
+            try { nativeSchedules = JSON.parse(valStr); } catch(e) { console.error(e); }
+          }
+        }
+        if (!nativeSchedules[taskDate]) nativeSchedules[taskDate] = [];
+        const newNativeSched = {
+          id: String(Date.now() + Math.floor(Math.random() * 1000)),
+          text: taskText,
+          timeStart,
+          timeEnd,
+          time,
+          duration,
+          done: false,
+          createdAt: new Date().toISOString(),
+          isReminderEnabled: false,
+          deferredCount: 0,
+          isRecurring: false
+        };
+        nativeSchedules[taskDate].push(newNativeSched);
+        await setDoc(nativeDocRef, { value: JSON.stringify(nativeSchedules), updatedAt: new Date().toISOString() }, { merge: true });
+
+        // 2. 웹앱 (users/{uid}/data/schedules)
+        const webDocRef = doc(nyangDb, 'users', user.uid, 'data', 'schedules');
+        const webDocSnap = await getDoc(webDocRef);
+        let webSchedules = {};
+        if (webDocSnap.exists()) {
+          const content = webDocSnap.data().content;
+          webSchedules = typeof content === 'object' ? content : (typeof content === 'string' ? JSON.parse(content) : {});
+        }
+        if (!webSchedules[taskDate]) webSchedules[taskDate] = [];
+        const newWebSched = {
+          id: String(Date.now() + Math.floor(Math.random() * 1000)),
+          text: taskText,
+          timeStart,
+          timeEnd,
+          time,
+          duration,
+          done: false,
+          createdAt: new Date().toISOString(),
+          isReminderEnabled: false,
+          deferredCount: 0,
+          isRecurring: false
+        };
+        webSchedules[taskDate].push(newWebSched);
+        await setDoc(webDocRef, { content: webSchedules, updatedAt: new Date().toISOString() }, { merge: true });
+      }
+
+      showToast('🐱 냥냥코치에 할 일이 등록되었습니다!');
+    } catch (e) {
+      console.error(e);
+      showToast('❌ 냥냥코치 전송 실패: ' + e.message, 'error');
+    }
+  };
+
+  // ─── 실천할 일 각각 냥냥코치로 전송하는 모달 제어 ───
+  let pendingSendTodoText = '';
+  let pendingSendNoteId = null;
+  let nyangSendTimeType = 'none';
+
+  window.initNyangSendTimeButtons = () => {
+    const container = document.getElementById('nyangSendTimeButtons');
+    if (!container) return;
+    
+    container.onclick = (e) => {
+      const btn = e.target.closest('.nyang-send-time-btn');
+      if (!btn) return;
+      
+      container.querySelectorAll('.nyang-send-time-btn').forEach(b => {
+        b.style.background = 'white';
+        b.style.color = '#8B7CFF';
+        b.style.border = '1px solid #EEE9FF';
+        b.classList.remove('active');
+      });
+      
+      btn.style.background = '#8B7CFF';
+      btn.style.color = 'white';
+      btn.style.border = '1px solid #8B7CFF';
+      btn.classList.add('active');
+      
+      nyangSendTimeType = btn.getAttribute('data-type');
+      window.renderNyangSendTimeInputs();
+    };
+  };
+
+  window.renderNyangSendTimeInputs = () => {
+    const inputDiv = document.getElementById('nyangSendTimeInputs');
+    if (!inputDiv) return;
+    
+    if (nyangSendTimeType === 'none') {
+      inputDiv.innerHTML = '';
+    } else if (nyangSendTimeType === 'single') {
+      inputDiv.innerHTML = `
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>특정 시간:</span>
+          <input type="time" id="nyangSendInputTime" style="padding:4px 8px; border-radius:8px; border:1.5px solid var(--paper-3); background:#ffffff; color:var(--ink); font-size:12px; outline:none;">
+        </div>
+      `;
+    } else if (nyangSendTimeType === 'range') {
+      inputDiv.innerHTML = `
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>시작 시간:</span>
+          <input type="time" id="nyangSendInputTimeStart" style="padding:4px 8px; border-radius:8px; border:1.5px solid var(--paper-3); background:#ffffff; color:var(--ink); font-size:12px; outline:none;">
+          <span>~ 종료 시간:</span>
+          <input type="time" id="nyangSendInputTimeEnd" style="padding:4px 8px; border-radius:8px; border:1.5px solid var(--paper-3); background:#ffffff; color:var(--ink); font-size:12px; outline:none;">
+        </div>
+      `;
+    } else if (nyangSendTimeType === 'duration') {
+      inputDiv.innerHTML = `
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>소요 시간:</span>
+          <input type="text" id="nyangSendInputDuration" placeholder="예: 30분, 1시간 30분" style="padding:4px 8px; border-radius:8px; border:1.5px solid var(--paper-3); background:#ffffff; color:var(--ink); font-size:12px; width:160px; outline:none;">
+        </div>
+      `;
+    }
+  };
+
+  window.openNyangSendModal = (todoText, noteId) => {
+    const isLoggedIn = (window.nyangAuth && window.nyangAuth.currentUser);
+    const modal = document.getElementById('nyangSendModal');
+    if (!modal) return;
+    
+    const body = modal.querySelector('.modal-body');
+    
+    if (!isLoggedIn) {
+      body.innerHTML = `
+        <div style="text-align:center; padding:12px 0;">
+          <img src="/nyang_logo.png" alt="" style="width:56px; height:56px; border-radius:16px; object-fit:cover; margin-bottom:16px; box-shadow:0 6px 16px rgba(109,85,245,0.16);">
+          <h4 style="font-size:16px; font-weight:700; color:var(--ink); margin-bottom:8px;">냥냥코치 연동이 필요해요</h4>
+          <p style="font-size:13px; color:var(--ink-2); line-height:1.6; margin-bottom:20px;">
+            이 기능은 등록한 실천 과제를 모바일 <b>냥냥코치</b> 앱의 할 일 및 캘린더 일정으로 바로 전송하는 기능입니다.<br>
+            서비스를 이용하시려면 먼저 로그인을 진행해 주세요. 만약 앱이 없다면 아래 스토어에서 다운로드 받으실 수 있습니다!
+          </p>
+          
+          <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <a href="https://apps.apple.com" target="_blank" style="flex:1; text-align:center; background:#4a4a4a; color:#fff; padding:10px 0; border-radius:10px; text-decoration:none; font-size:12px; font-weight:600; transition:opacity 0.15s;">🍏 App Store</a>
+            <a href="https://play.google.com" target="_blank" style="flex:1; text-align:center; background:#6EBF8B; color:#fff; padding:10px 0; border-radius:10px; text-decoration:none; font-size:12px; font-weight:600; transition:opacity 0.15s;">▶ Google Play</a>
+          </div>
+          
+          <div style="display:flex; justify-content:center; gap:10px;">
+            <button class="btn-ghost" onclick="closeModal('nyangSendModal')" style="padding:8px 16px;">닫기</button>
+            <button class="btn-primary" onclick="closeModal('nyangSendModal'); toggleNyangLogin();" style="padding:8px 20px; display:inline-flex; align-items:center; gap:8px;">
+              <img src="/nyang_logo.png" alt="" style="width:18px; height:18px; border-radius:5px; object-fit:cover;"> 냥냥코치 연동하기
+            </button>
+          </div>
+        </div>
+      `;
+      modal.classList.add('open');
+      return;
+    }
+
+    pendingSendTodoText = todoText;
+    pendingSendNoteId = noteId;
+    
+    body.innerHTML = `
+      <div style="background:var(--paper); padding:12px; border-radius:12px; font-size:14px; line-height:1.5; color:var(--ink-2); font-weight:500;">
+        <span style="font-size:11px; font-weight:600; color:var(--ink-3); text-transform:uppercase; display:block; margin-bottom:4px;">전송할 실천 내용</span>
+        <span id="nyangSendTodoText" style="color:var(--ink);"></span>
+      </div>
+      
+      <div class="field" style="margin-top:8px;">
+        <label>실천할 날짜</label>
+        <input type="date" id="nyangSendTodoDate" style="border: 1.5px solid var(--paper-3); border-radius: 12px; padding: 11px 14px; font-family: inherit; font-size: 14px; color: var(--ink); background: #FFFFFF; outline: none; width: 100%;">
+      </div>
+
+      <div class="field" style="margin-top:8px;">
+        <label>시간대 설정</label>
+        <div id="nyangSendTimeButtons" style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="nyang-send-time-btn active" data-type="none" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">시간 지정 안 함</button>
+          <button type="button" class="nyang-send-time-btn" data-type="single" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">특정 시간</button>
+          <button type="button" class="nyang-send-time-btn" data-type="range" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">시간 범위</button>
+          <button type="button" class="nyang-send-time-btn" data-type="duration" style="padding:4px 10px; border-radius:20px; border:1px solid #EEE9FF; background:white; color:#8B7CFF; font-size:11px; font-weight:700; cursor:pointer;">소요 시간</button>
+        </div>
+        <div id="nyangSendTimeInputs" style="margin-top:8px; font-size:12px; color:var(--ink-2);">
+        </div>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+        <button class="btn-ghost" onclick="closeModal('nyangSendModal')">취소</button>
+        <button class="btn-primary" onclick="window.confirmNyangSend()">전송하기</button>
+      </div>
+    `;
+
+    document.getElementById('nyangSendTodoText').textContent = todoText;
+    document.getElementById('nyangSendTodoDate').value = today();
+    
+    // Reset time choices
+    nyangSendTimeType = 'none';
+    const container = document.getElementById('nyangSendTimeButtons');
+    if (container) {
+      container.querySelectorAll('.nyang-send-time-btn').forEach(b => {
+        if (b.getAttribute('data-type') === 'none') {
+          b.style.background = '#8B7CFF';
+          b.style.color = 'white';
+          b.style.border = '1px solid #8B7CFF';
+          b.classList.add('active');
+        } else {
+          b.style.background = 'white';
+          b.style.color = '#8B7CFF';
+          b.style.border = '1px solid #EEE9FF';
+          b.classList.remove('active');
+        }
+      });
+    }
+    window.renderNyangSendTimeInputs();
+    window.initNyangSendTimeButtons(); // Re-attach click events to dynamic buttons
+    
+    modal.classList.add('open');
+  };
+
+  window.confirmNyangSend = async () => {
+    const dateVal = document.getElementById('nyangSendTodoDate').value || today();
+    
+    let time = null;
+    let timeStart = null;
+    let timeEnd = null;
+    let duration = null;
+
+    if (nyangSendTimeType === 'single') {
+      const input = document.getElementById('nyangSendInputTime');
+      if (input) time = input.value || null;
+    } else if (nyangSendTimeType === 'range') {
+      const start = document.getElementById('nyangSendInputTimeStart');
+      const end = document.getElementById('nyangSendInputTimeEnd');
+      if (start) timeStart = start.value || null;
+      if (end) timeEnd = end.value || null;
+    } else if (nyangSendTimeType === 'duration') {
+      const dur = document.getElementById('nyangSendInputDuration');
+      if (dur) duration = dur.value.trim() || null;
+    }
+
+    if (window.sendIdeaDirect) {
+      await window.sendIdeaDirect(pendingSendTodoText, pendingSendNoteId, dateVal, { time, timeStart, timeEnd, duration });
+      closeModal('nyangSendModal');
+    } else {
+      showToast('❌ 냥냥코치 연동이 준비되지 않았습니다.', 'error');
+    }
+  };
+
+  // 모듈 초기화 콜백
+  window.initNyangSendTimeButtons();
+</script>
+</body>
+</html>
