@@ -247,21 +247,124 @@
     box-shadow: 0 8px 20px rgba(109,85,245,0.12);
     transform: translateY(-1px);
   }
-  .usage-modal-copy {
+  .usage-page {
+    padding: 28px 32px 44px;
+    flex: 1;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FBFAFF 100%);
+  }
+  .usage-page-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .usage-page-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 240px;
+    border: 1px solid var(--paper-3);
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at 78% 22%, rgba(139,124,255,0.13) 0 22%, rgba(139,124,255,0) 46%),
+      radial-gradient(circle at 34% 74%, rgba(110,191,139,0.16) 0 18%, rgba(110,191,139,0) 48%),
+      linear-gradient(135deg, #FFFFFF 0%, #F6F3FF 48%, #F1FAF6 100%);
+    padding: 44px 48px;
+    box-shadow: 0 18px 46px rgba(139,124,204,0.08);
+  }
+  .usage-page-hero::after {
+    content: '';
+    position: absolute;
+    right: 56px;
+    bottom: -36px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.44);
+    border: 1px solid rgba(139,124,255,0.12);
+  }
+  .usage-page-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--green);
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 18px;
+  }
+  .usage-page-kicker img {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 8px 18px rgba(109,85,245,0.14);
+  }
+  .usage-page-title {
+    color: var(--ink);
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: -0.7px;
+    margin-bottom: 18px;
+  }
+  .usage-page-lead {
+    max-width: 720px;
+    color: var(--ink-2);
+    font-size: 16px;
+    line-height: 1.85;
+  }
+  .usage-page-lead strong { color: var(--ink); }
+  .usage-page-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+  }
+  .usage-page-section {
+    background: #FFFFFF;
+    border: 1px solid var(--paper-3);
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 12px 30px rgba(139,124,204,0.06);
+  }
+  .usage-page-section.wide { grid-column: 1 / -1; }
+  .usage-page-section h3 {
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 850;
+    margin-bottom: 12px;
+  }
+  .usage-page-section p {
     color: var(--ink-2);
     font-size: 14px;
-    line-height: 1.75;
+    line-height: 1.8;
   }
-  .usage-modal-copy h4 {
-    color: var(--ink);
-    font-size: 15px;
-    margin: 18px 0 8px;
+  .usage-feature-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
   }
-  .usage-modal-copy ul {
-    margin: 0;
-    padding-left: 18px;
+  .usage-feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--ink-2);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--paper-2);
   }
-  .usage-modal-copy li { margin: 4px 0; }
+  .usage-feature-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+  .usage-page-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 22px;
+  }
 
   /* ─── CONTENT ─── */
   .content { padding: 28px 32px; flex: 1; }
@@ -603,6 +706,12 @@
     .hero-svg { transform: translateX(60px); opacity: 0.82; }
     .usage-btn { padding: 0 12px; }
     .usage-btn span { display: none; }
+    .usage-page { padding: 18px 16px 32px; }
+    .usage-page-hero { padding: 32px 24px; min-height: auto; }
+    .usage-page-title { font-size: 28px; }
+    .usage-page-lead { font-size: 14px; }
+    .usage-page-grid,
+    .usage-feature-list { grid-template-columns: 1fr; }
     .stats-row { flex-wrap: wrap; }
   }
 
@@ -712,12 +821,12 @@
         <span class="search-icon">⌕</span>
         <input type="text" id="searchInput" placeholder="제목, 발췌, 태그 검색…" oninput="render()">
       </div>
-      <button class="usage-btn" onclick="document.getElementById('usageModal').classList.add('open')">
+      <button class="usage-btn" onclick="showUsagePage()">
         <svg class="line-icon" viewBox="0 0 24 24" style="width:16px; height:16px; stroke-width:2.2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
         <span>사용법</span>
       </button>
     </div>
-    <div class="content">
+    <div class="content" id="notesContent">
       <!-- 히어로 배너 -->
       <div class="hero-banner" id="heroBanner">
         <!-- 배너 전체를 채우는 라인 일러스트 SVG -->
@@ -850,6 +959,54 @@
         <button class="empty-cta" onclick="openAddModal()">+ 노트 추가하기</button>
       </div>
     </div>
+
+    <section class="usage-page" id="usagePage" style="display:none;">
+      <div class="usage-page-inner">
+        <div class="usage-page-hero">
+          <div class="usage-page-kicker">
+            <img src="/nyang_logo.png" alt="">
+            <span>나만의 지식 에이전트</span>
+          </div>
+          <div class="usage-page-title">Nyang Insight란?</div>
+          <div class="usage-page-lead">
+            <p><strong>Nyang Insight</strong>는 책, 강의, 영화, 유튜브 등에서 얻은 지식을 한곳에 저장하고, AI를 통해 다시 연결하여 새로운 인사이트를 얻을 수 있는 무료 지식 에이전트입니다.</p>
+            <p>클리어런스 랩은 <strong>“지식은 실천할 때 비로소 가치가 생긴다.”</strong>는 철학을 바탕으로 이 앱을 만들었습니다.</p>
+          </div>
+        </div>
+
+        <div class="usage-page-grid">
+          <section class="usage-page-section wide">
+            <h3>주요 기능</h3>
+            <div class="usage-feature-list">
+              <div class="usage-feature-item"><span class="usage-feature-dot"></span><span>책, 영화, 강의, 유튜브 등 다양한 지식을 한곳에 저장</span></div>
+              <div class="usage-feature-item"><span class="usage-feature-dot"></span><span>저장한 지식을 AI와 함께 다시 탐색하고 대화</span></div>
+              <div class="usage-feature-item"><span class="usage-feature-dot"></span><span>흩어진 지식을 연결하여 새로운 인사이트 발견</span></div>
+              <div class="usage-feature-item"><span class="usage-feature-dot"></span><span>떠오른 실행 아이디어를 냥냥코치 할 일로 바로 보내기</span></div>
+            </div>
+          </section>
+
+          <section class="usage-page-section">
+            <h3>로컬 AI 지원</h3>
+            <p>Nyang Insight는 API는 물론 로컬 AI도 지원합니다. 로컬 AI를 사용하면 별도의 API 비용 없이 내 PC에서 AI와 대화할 수 있습니다.</p>
+          </section>
+
+          <section class="usage-page-section">
+            <h3>냥냥코치 연동</h3>
+            <p>Nyang Insight는 단독으로도 충분히 사용할 수 있습니다. 하지만 냥냥코치와 함께 사용하면, 생각은 Nyang Insight에서 정리하고 실행은 냥냥코치에서 이어갈 수 있습니다.</p>
+            <p>AI와 대화하다가 떠오른 아이디어나 할 일을 버튼 한 번으로 냥냥코치 플래너에 보낼 수 있습니다.</p>
+          </section>
+
+          <section class="usage-page-section wide">
+            <h3>우리의 목표</h3>
+            <p>지식을 저장하는 것에서 끝나지 않고, 필요할 때 다시 꺼내 활용하여 행동으로 이어지게 만드는 것. 그것이 Nyang Insight를 만든 이유입니다.</p>
+          </section>
+        </div>
+
+        <div class="usage-page-actions">
+          <button class="btn-primary" onclick="hideUsagePage()">노트로 돌아가기</button>
+        </div>
+      </div>
+    </section>
     </div>
 
     <!-- AI 채팅 화면 -->
@@ -1119,44 +1276,6 @@
           <span>삭제</span>
         </button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- 사용법 / 소개 모달 -->
-<div class="modal-overlay" id="usageModal" style="z-index: 300;">
-  <div class="modal" style="max-width: 640px;">
-    <div class="modal-header">
-      <div class="modal-title" style="display:flex; align-items:center; gap:10px;">
-        <img src="/nyang_logo.png" alt="" style="width:34px; height:34px; border-radius:10px; object-fit:cover; box-shadow:0 4px 10px rgba(109,85,245,0.14);">
-        <span>Nyang Insight란?</span>
-      </div>
-      <button class="modal-close" onclick="closeModal('usageModal')">✕</button>
-    </div>
-    <div class="modal-body usage-modal-copy">
-      <p>Nyang Insight는 책, 강의, 영화, 유튜브 등에서 얻은 지식을 한곳에 저장하고, AI를 통해 다시 연결하여 새로운 인사이트를 얻을 수 있는 무료 지식 에이전트입니다.</p>
-      <p>클리어런스 랩은 “지식은 실천할 때 비로소 가치가 생긴다.”는 철학을 바탕으로 이 앱을 만들었습니다.</p>
-
-      <h4>주요 기능</h4>
-      <ul>
-        <li>책, 영화, 강의, 유튜브 등 다양한 지식을 한곳에 저장</li>
-        <li>저장한 지식을 AI와 함께 다시 탐색하고 대화</li>
-        <li>흩어진 지식을 연결하여 새로운 인사이트 발견</li>
-        <li>떠오른 실행 아이디어를 냥냥코치 할 일로 바로 보내기</li>
-      </ul>
-
-      <h4>로컬 AI 지원</h4>
-      <p>Nyang Insight는 API는 물론 로컬 AI도 지원합니다. 로컬 AI를 사용하면 별도의 API 비용 없이 내 PC에서 AI와 대화할 수 있습니다.</p>
-
-      <h4>냥냥코치 연동</h4>
-      <p>Nyang Insight는 단독으로도 충분히 사용할 수 있습니다. 하지만 냥냥코치와 함께 사용하면, 생각은 Nyang Insight에서 정리하고 실행은 냥냥코치에서 이어갈 수 있습니다.</p>
-      <p>AI와 대화하다가 떠오른 아이디어나 할 일을 버튼 한 번으로 냥냥코치 플래너에 보낼 수 있습니다.</p>
-
-      <h4>우리의 목표</h4>
-      <p>지식을 저장하는 것에서 끝나지 않고, 필요할 때 다시 꺼내 활용하여 행동으로 이어지게 만드는 것. 그것이 Nyang Insight를 만든 이유입니다.</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-primary" onclick="closeModal('usageModal')">확인</button>
     </div>
   </div>
 </div>
@@ -1515,6 +1634,35 @@ function render() {
   }).join('');
 }
 
+function getFilterTitle(f) {
+  if (f === 'all') return '전체 노트';
+  if (f.startsWith('tag:')) return `<span style="display:inline-flex; align-items:center; gap:6px;"><svg class="line-icon" viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> ${escHtml(f.slice(4))}</span>`;
+  if (SOURCE[f]) return `<span style="display:inline-flex; align-items:center; gap:6px;">${getLineIcon(f, SOURCE[f].emoji)} ${SOURCE[f].label}</span>`;
+  return '노트';
+}
+
+function showUsagePage() {
+  const notesContent = document.getElementById('notesContent');
+  const usagePage = document.getElementById('usagePage');
+  if (!notesContent || !usagePage) return;
+  notesContent.style.display = 'none';
+  usagePage.style.display = 'block';
+  document.getElementById('pageTitle').textContent = '사용법';
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function hideUsagePage() {
+  const notesContent = document.getElementById('notesContent');
+  const usagePage = document.getElementById('usagePage');
+  if (!notesContent || !usagePage) return;
+  usagePage.style.display = 'none';
+  notesContent.style.display = '';
+  document.getElementById('pageTitle').innerHTML = getFilterTitle(currentFilter);
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function renderStats(filtered) {
   const row = document.getElementById('statsRow');
   const total = filtered.length;
@@ -1564,14 +1712,16 @@ function renderStats(filtered) {
 }
 
 function setFilter(f, el) {
+  const usagePage = document.getElementById('usagePage');
+  const notesContent = document.getElementById('notesContent');
+  if (usagePage && notesContent) {
+    usagePage.style.display = 'none';
+    notesContent.style.display = '';
+  }
   currentFilter = f;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
-  let label = '노트';
-  if (f === 'all') label = '전체 노트';
-  else if (f.startsWith('tag:')) label = `<span style="display:inline-flex; align-items:center; gap:6px;"><svg class="line-icon" viewBox="0 0 24 24" style="width:18px; height:18px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> ${escHtml(f.slice(4))}</span>`;
-  else if (SOURCE[f]) label = `<span style="display:inline-flex; align-items:center; gap:6px;">${getLineIcon(f, SOURCE[f].emoji)} ${SOURCE[f].label}</span>`;
-  document.getElementById('pageTitle').innerHTML = label;
+  document.getElementById('pageTitle').innerHTML = getFilterTitle(f);
   render();
 }
 
@@ -1727,7 +1877,7 @@ function renderActionTodoListEdit() {
   `).join('');
 }
 
-['addModal','detailModal','customSourceModal','usageModal'].forEach(id => {
+['addModal','detailModal','customSourceModal'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
 });
