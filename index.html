@@ -524,6 +524,7 @@
     color: var(--ink-2); font-size: 14px; line-height: 1.65;
     border-left: 3px solid var(--accent-tag); padding-left: 12px;
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    white-space: pre-line;
     overflow: hidden;
   }
 
@@ -604,7 +605,47 @@
     background: #fff;
   }
   textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
-  #excerptField { font-family: 'Noto Sans KR', 'Inter', sans-serif; font-size: 15px; min-height: 110px; }
+  .excerpt-list { display: flex; flex-direction: column; gap: 8px; }
+  .excerpt-entry { display: flex; gap: 8px; align-items: stretch; }
+  .excerpt-entry textarea {
+    font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    font-size: 15px;
+    min-height: 72px;
+    flex: 1;
+  }
+  .excerpt-remove-btn {
+    width: 40px;
+    border: 1.5px solid var(--paper-3);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--ink-3);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .excerpt-remove-btn:hover {
+    color: var(--danger);
+    border-color: #FFA8A8;
+    background: #FFF5F5;
+  }
+  .excerpt-add-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--accent-2);
+    background: #fff;
+    color: var(--accent-2);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .excerpt-add-btn:hover { background: #F7F4FF; }
 
   .tag-input-wrap {
     display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
@@ -674,6 +715,7 @@
     font-size: 16px; line-height: 1.75; color: var(--ink-2);
     border-left: 4px solid var(--accent-tag); padding-left: 18px;
     margin: 4px 0;
+    white-space: pre-line;
   }
   .detail-section-label {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
@@ -1213,7 +1255,8 @@
 
       <div class="field">
         <label>발췌 / 인상 깊은 구절</label>
-        <textarea id="excerptField" placeholder="기억하고 싶은 문장이나 장면, 핵심 내용을 적어주세요…"></textarea>
+        <div class="excerpt-list" id="excerptList"></div>
+        <button type="button" class="excerpt-add-btn" onclick="addExcerptField()">+ 발췌 추가</button>
       </div>
 
       <div class="field">
@@ -1546,16 +1589,17 @@ async function saveNote() {
 
   const noteId = editingId || Date.now();
   const noteDate = document.getElementById('f-date').value.trim() || today();
+  const excerpt = getExcerptValue();
 
   const note = {
     id:      noteId,
     title,
     type:    document.getElementById('f-type').value,
-    excerpt: document.getElementById('excerptField').value.trim(),
+    excerpt,
     thought: document.getElementById('f-thought').value.trim(),
     idea:    '',
     tags:    [...currentTags],
-    date:    document.getElementById('f-date').value.trim(),
+    date:    noteDate,
     author:  author,
     link:    link,
     actionTodos: [...editingActionTodos]
@@ -1741,13 +1785,58 @@ function renderTagNav() {
   }).join('');
 }
 
+function addExcerptField(value = '') {
+  const list = document.getElementById('excerptList');
+  if (!list) return;
+  const row = document.createElement('div');
+  row.className = 'excerpt-entry';
+  row.innerHTML = `
+    <textarea class="excerptField" placeholder="기억하고 싶은 문장이나 장면, 핵심 내용을 적어주세요…"></textarea>
+    <button type="button" class="excerpt-remove-btn" onclick="removeExcerptField(this)" aria-label="발췌 삭제">×</button>
+  `;
+  row.querySelector('textarea').value = value;
+  list.appendChild(row);
+  updateExcerptRemoveButtons();
+}
+
+function removeExcerptField(button) {
+  const row = button.closest('.excerpt-entry');
+  if (row) row.remove();
+  updateExcerptRemoveButtons();
+}
+
+function updateExcerptRemoveButtons() {
+  const rows = document.querySelectorAll('#excerptList .excerpt-entry');
+  rows.forEach(row => {
+    const button = row.querySelector('.excerpt-remove-btn');
+    if (button) button.style.visibility = rows.length > 1 ? 'visible' : 'hidden';
+  });
+}
+
+function setExcerptFields(excerpt = '') {
+  const list = document.getElementById('excerptList');
+  if (!list) return;
+  list.innerHTML = '';
+  const parts = excerpt
+    ? excerpt.split(/\n{2,}/).map(part => part.trim()).filter(Boolean)
+    : [''];
+  parts.forEach(part => addExcerptField(part));
+}
+
+function getExcerptValue() {
+  return Array.from(document.querySelectorAll('#excerptList .excerptField'))
+    .map(field => field.value.trim())
+    .filter(Boolean)
+    .join('\n\n');
+}
+
 function openAddModal(note = null) {
   editingId = note ? note.id : null;
   currentTags = note ? [...(note.tags || [])] : [];
   document.getElementById('modalHeading').textContent = note ? '노트 수정' : '새 노트 추가';
   document.getElementById('f-title').value      = note ? note.title   : '';
   document.getElementById('f-type').value       = note ? note.type    : 'book';
-  document.getElementById('excerptField').value = note ? (note.excerpt||'') : '';
+  setExcerptFields(note ? (note.excerpt||'') : '');
   document.getElementById('f-thought').value    = note ? (note.thought||'') : '';
   document.getElementById('f-date').value       = note ? (note.date||'') : today();
   document.getElementById('f-author').value     = note ? (note.link || note.author || '') : '';
