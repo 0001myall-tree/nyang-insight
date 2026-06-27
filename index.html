@@ -1555,8 +1555,8 @@ function openDetail(id) {
       todoListDiv.innerHTML = todos.map((todo, idx) => `
         <div style="display:flex; align-items:center; justify-content:space-between; background:var(--paper); padding:10px 14px; border-radius:12px; font-size:13.5px; border:1px solid var(--paper-3);">
           <span style="font-weight:500;">${idx + 1}. ${escHtml(todo)}</span>
-          <button type="button" onclick="window.openNyangSendModal('${escAttr(todo)}', ${n.id})" style="background:var(--accent-tag); color:white; border:none; padding:5px 12px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; transition:background 0.15s;" onmouseover="this.style.background='#5CAE7A'" onmouseout="this.style.background='var(--accent-tag)'">
-            <img src="/nyang_logo.png" alt="" style="width:14px; height:14px; border-radius:4px; object-fit:cover;"> 전송
+          <button type="button" onclick="window.openNyangSendModal('${escAttr(todo)}', ${n.id})" style="background:var(--accent-tag); color:white; border:none; padding:5px 12px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; transition:background 0.15s;" onmouseover="this.style.background='#5CAE7A'" onmouseout="this.style.background='var(--accent-tag)'">
+            전송
           </button>
         </div>
       `).join('');
