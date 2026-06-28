@@ -2956,6 +2956,8 @@ ${contextSection}`;
       reply = await callClaude(systemPrompt, chatHistory);
     } else if (aiConfig.provider === 'gpt') {
       reply = await callGPT(systemPrompt, chatHistory);
+    } else if (aiConfig.provider === 'gemini') {
+      reply = await callGemini(systemPrompt, chatHistory);
     } else if (aiConfig.provider === 'ollama') {
       reply = await callOllama(systemPrompt, chatHistory);
     }
