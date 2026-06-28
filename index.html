@@ -3011,7 +3011,7 @@ async function callGemini(system, history) {
   };
 
   if (system) {
-    payload.system_instruction = {
+    payload.systemInstruction = {
       parts: [{ text: system }]
     };
   }
