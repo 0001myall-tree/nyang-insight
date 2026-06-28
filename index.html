@@ -1275,9 +1275,12 @@
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-ghost" onclick="closeModal('aiModal')">취소</button>
-      <button class="btn-primary" onclick="saveAISettings()">연결하기</button>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+      <button id="deleteAIProfileBtn" class="btn-danger" style="display:none" onclick="deleteAIProfile()">삭제</button>
+      <div style="display:flex;gap:10px;margin-left:auto;">
+        <button class="btn-ghost" onclick="closeModal('aiModal')">취소</button>
+        <button class="btn-primary" onclick="saveAISettings()">연결하기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2667,6 +2670,13 @@ function openAISettings(profileId = null) {
   document.getElementById('geminiKey').value     = (p && p.provider === 'gemini') ? (p.key || '') : '';
   document.getElementById('ollamaModel').value   = p ? (p.model || 'qwen2.5:7b') : 'qwen2.5:7b';
   document.getElementById('aiModal')._editId     = p ? p.id : null;
+
+  // Show delete button only when editing an existing profile
+  const deleteBtn = document.getElementById('deleteAIProfileBtn');
+  if (deleteBtn) {
+    deleteBtn.style.display = p ? 'inline-block' : 'none';
+  }
+
   updateAIProviderUI();
   document.getElementById('aiModal').classList.add('open');
 }
@@ -2704,6 +2714,30 @@ function saveAISettings() {
   renderQuickSwitch();
   closeModal('aiModal');
   showToast('✅ 저장됐어요!');
+}
+
+function deleteAIProfile() {
+  const editId = document.getElementById('aiModal')._editId;
+  if (!editId) return;
+  if (!confirm('이 AI 설정을 삭제할까요?')) return;
+
+  aiProfiles = aiProfiles.filter(p => p.id !== editId);
+
+  // If the deleted profile was the active one, activate the first remaining one or nullify it
+  if (aiConfig && aiConfig.id === editId) {
+    if (aiProfiles.length > 0) {
+      aiProfiles[0].active = true;
+      aiConfig = aiProfiles[0];
+    } else {
+      aiConfig = null;
+    }
+  }
+
+  localStorage.setItem('ci_ai_profiles', JSON.stringify(aiProfiles));
+  updateAIStatus();
+  renderQuickSwitch();
+  closeModal('aiModal');
+  showToast('🗑️ 삭제되었어요.');
 }
 
 function switchProfile(id) {
