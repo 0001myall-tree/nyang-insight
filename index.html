@@ -2712,8 +2712,26 @@ function saveAISettings() {
   aiConfig = profile;
   updateAIStatus();
   renderQuickSwitch();
+
+  if (provider === 'gemini' && profile.key) {
+    // API 키 유효성 검사 테스트 호출
+    fetch(`https://generativelanguage.googleapis.com/v1/models?key=${profile.key}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert(`⚠️ 구글 Gemini API 키 확인 오류:\n${data.error.message}\n\n입력한 키가 올바른 구글 API 키인지 확인해 주세요.`);
+        } else {
+          showToast('✅ 제미나이가 성공적으로 연결되었어요!');
+        }
+      })
+      .catch(err => {
+        console.error('Gemini Key Test connection failed:', err);
+      });
+  } else {
+    showToast('✅ 저장됐어요!');
+  }
+
   closeModal('aiModal');
-  showToast('✅ 저장됐어요!');
 }
 
 function deleteAIProfile() {
