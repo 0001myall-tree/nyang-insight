@@ -1222,10 +1222,20 @@
         <label>AI 방식 선택</label>
         <select id="aiProvider" onchange="updateAIProviderUI()">
           <option value="">— 선택해주세요 —</option>
+          <option value="gemini">Gemini (Google) — 무료 API 키 발급 가능, 추천!</option>
           <option value="claude">Claude (Anthropic)</option>
           <option value="gpt">GPT (OpenAI)</option>
           <option value="ollama">로컬 AI (Ollama) — 비용 0원, 속도는 느릴 수 있음</option>
         </select>
+      </div>
+
+      <!-- Gemini -->
+      <div id="aiSectionGemini" style="display:none" class="field">
+        <label>Gemini API 키</label>
+        <input type="password" id="geminiKey" placeholder="AIzaSy...">
+        <div style="font-size:12px;color:var(--ink-2);margin-top:4px;line-height:1.6;">
+          🔑 <a href="https://aistudio.google.com/" target="_blank" style="color:var(--accent-2);font-weight:700;">여기(Google AI Studio)</a>에서 무료로 API 키를 즉시 발급받아 복사해 주세요. (신용카드 등록 없이 평생 무료 사용 가능!)
+        </div>
       </div>
 
       <!-- Claude -->
@@ -2654,6 +2664,7 @@ function openAISettings(profileId = null) {
   document.getElementById('aiProvider').value    = p ? (p.provider || '') : '';
   document.getElementById('claudeKey').value     = (p && p.provider === 'claude') ? (p.key || '') : '';
   document.getElementById('gptKey').value        = (p && p.provider === 'gpt')    ? (p.key || '') : '';
+  document.getElementById('geminiKey').value     = (p && p.provider === 'gemini') ? (p.key || '') : '';
   document.getElementById('ollamaModel').value   = p ? (p.model || 'qwen2.5:7b') : 'qwen2.5:7b';
   document.getElementById('aiModal')._editId     = p ? p.id : null;
   updateAIProviderUI();
@@ -2664,6 +2675,7 @@ function updateAIProviderUI() {
   const p = document.getElementById('aiProvider').value;
   document.getElementById('aiSectionClaude').style.display = p === 'claude' ? '' : 'none';
   document.getElementById('aiSectionGPT').style.display    = p === 'gpt'    ? '' : 'none';
+  document.getElementById('aiSectionGemini').style.display = p === 'gemini' ? '' : 'none';
   document.getElementById('aiSectionOllama').style.display = p === 'ollama' ? 'flex' : 'none';
 }
 
@@ -2678,7 +2690,8 @@ function saveAISettings() {
     userName:    document.getElementById('userName').value.trim() || '나',
     provider,
     key:   provider === 'claude' ? document.getElementById('claudeKey').value.trim()
-         : provider === 'gpt'    ? document.getElementById('gptKey').value.trim() : '',
+         : provider === 'gpt'    ? document.getElementById('gptKey').value.trim()
+         : provider === 'gemini' ? document.getElementById('geminiKey').value.trim() : '',
     model: provider === 'ollama' ? document.getElementById('ollamaModel').value : '',
     active: true,
   };
@@ -2737,6 +2750,7 @@ function updateAIStatus() {
   const names = { 
     claude: 'Claude (Anthropic)', 
     gpt: 'GPT (OpenAI)', 
+    gemini: 'Gemini (Google, 비용 0원)',
     ollama: '로컬 AI (Ollama, 비용 0원)' 
   };
   const providerName = names[aiConfig.provider];
@@ -2972,11 +2986,48 @@ async function ensureHangulKoreanReply(systemPrompt, history, reply) {
   try {
     if (aiConfig.provider === 'claude') return await callClaude(systemPrompt, rewriteHistory);
     if (aiConfig.provider === 'gpt') return await callGPT(systemPrompt, rewriteHistory);
+    if (aiConfig.provider === 'gemini') return await callGemini(systemPrompt, rewriteHistory);
     if (aiConfig.provider === 'ollama') return await callOllama(systemPrompt, rewriteHistory);
   } catch (e) {
     console.warn('Korean rewrite failed', e);
   }
   return reply;
+}
+
+async function callGemini(system, history) {
+  // Convert chat history format from OpenAI/Anthropic format to Gemini API requirements
+  const contents = history.map(msg => {
+    const role = msg.role === 'assistant' ? 'model' : 'user';
+    return {
+      role: role,
+      parts: [{ text: msg.content }]
+    };
+  });
+
+  const payload = {
+    contents: contents
+  };
+
+  if (system) {
+    payload.systemInstruction = {
+      parts: [{ text: system }]
+    };
+  }
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${aiConfig.key}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || 'Gemini API Error');
+  if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+    return data.candidates[0].content.parts[0].text;
+  }
+  throw new Error('Gemini로부터 올바른 응답을 받지 못했습니다.');
 }
 
 async function callClaude(system, history) {
@@ -3471,6 +3522,8 @@ async function callAIRaw(prompt) {
     reply = await callClaude(system, [{ role: 'user', content: prompt }]);
   } else if (aiConfig.provider === 'gpt') {
     reply = await callGPT(system, [{ role: 'user', content: prompt }]);
+  } else if (aiConfig.provider === 'gemini') {
+    reply = await callGemini(system, [{ role: 'user', content: prompt }]);
   } else if (aiConfig.provider === 'ollama') {
     reply = await callOllama(system, [{ role: 'user', content: prompt }], { json: true });
   }
@@ -3491,6 +3544,8 @@ async function callAIText(system, prompt) {
     return await callClaude(system, [{ role: 'user', content: prompt }]);
   } else if (aiConfig.provider === 'gpt') {
     return await callGPT(system, [{ role: 'user', content: prompt }]);
+  } else if (aiConfig.provider === 'gemini') {
+    return await callGemini(system, [{ role: 'user', content: prompt }]);
   } else if (aiConfig.provider === 'ollama') {
     return await callOllama(system, [{ role: 'user', content: prompt }]);
   }
