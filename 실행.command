@@ -1,16 +1,20 @@
 #!/bin/bash
-# Clear Insight 실행 파일 (맥용)
 cd "$(dirname "$0")"
 
-# 파이썬 확인
+# Python 체크
 if ! command -v python3 &> /dev/null; then
-  osascript -e 'display dialog "파이썬이 설치되지 않았어요!\n\nhttps://python.org 에서 무료로 다운로드할 수 있어요." buttons {"확인"} default button "확인" with icon caution'
-  open "https://www.python.org/downloads/"
+  osascript -e 'display dialog "파이썬이 설치되지 않았어요!\nhttps://python.org 에서 무료로 다운로드하세요." buttons {"확인"} default button "확인"'
+  open https://www.python.org/downloads/
   exit 1
 fi
 
-# 브라우저 열기 (서버 시작 후 1.5초 뒤)
-sleep 1.5 && open "http://localhost:8000" &
+# youtube-transcript-api 설치 (없으면 자동 설치)
+if ! python3 -c "import youtube_transcript_api" 2>/dev/null; then
+  echo "📦 youtube-transcript-api 설치 중..."
+  pip3 install youtube-transcript-api --quiet
+fi
 
-# 서버 시작
+# 브라우저 열기 (서버 뜨기 전에 살짝 대기)
+sleep 1 && open http://localhost:8000 &
+
 python3 server.py

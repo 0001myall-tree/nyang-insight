@@ -646,6 +646,40 @@
     cursor: pointer;
   }
   .excerpt-add-btn:hover { background: #F7F4FF; }
+  .excerpt-ai-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .excerpt-ai-preview {
+    display: none;
+    border: 1.5px solid #DED8FF;
+    background: #F8F6FF;
+    border-radius: 12px;
+    padding: 12px 14px;
+    gap: 10px;
+    flex-direction: column;
+  }
+  .excerpt-ai-preview.open { display: flex; }
+  .excerpt-ai-preview-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent-2);
+  }
+  .excerpt-ai-preview-body {
+    white-space: pre-wrap;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+  .excerpt-ai-preview-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 
   .tag-input-wrap {
     display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
@@ -733,6 +767,11 @@
   .src-article { background: #d1fae5; }
   .src-other   { background: #f1f5f9; }
 
+  /* 소스 유형 가로 스크롤 */
+  #sourceTypeGrid::-webkit-scrollbar { display: none; }
+  /* 소스 유형 그리드 삭제 버튼 hover */
+  .src-type-btn:hover .src-delete-btn { opacity: 1 !important; }
+
   /* ─── RESPONSIVE ─── */
   @media (max-width: 768px) {
     .sidebar { width: 200px; }
@@ -801,6 +840,10 @@
         <span>AI 채팅</span>
       </button>
     </div>
+    <button id="tabIdea" onclick="switchTab('idea')" style="display:flex; align-items:center; justify-content:center; gap:6px; width:100%; background:#fff; color:var(--ink); border:1px solid var(--paper-3); border-radius:8px; padding:9px; font-size:12.5px; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.15s; margin-bottom:4px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <span>💡 아이디어</span>
+    </button>
 
     <!-- 스크롤 래퍼 추가 -->
     <div class="sidebar-scroll-wrap" style="flex: 1; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; width: calc(100% + 12px); padding-right: 12px;">
@@ -861,7 +904,7 @@
       </select>
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
-        <input type="text" id="searchInput" placeholder="제목, 발췌, 태그 검색…" oninput="render()">
+        <input type="text" id="searchInput" placeholder="제목, 메모, 태그 검색…" oninput="render()">
       </div>
       <button class="usage-btn" onclick="showUsagePage()">
         <svg class="line-icon" viewBox="0 0 24 24" style="width:16px; height:16px; stroke-width:2.2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -1012,12 +1055,13 @@
           <div class="usage-page-title">Nyang Insight란?</div>
           <div class="usage-page-lead">
             <p><strong>Nyang Insight</strong>는 책, 강의, 영화, 유튜브 등에서 얻은 지식을 한곳에 저장하고, AI를 통해 다시 연결하여 새로운 인사이트를 얻을 수 있는 무료 지식 에이전트입니다.</p>
+            <p><strong>필요한 순간</strong>에는 내가 저장한 지식 속에서 <strong>지금의 고민과 가장 관련 있는 내용을 찾아</strong> 새로운 관점을 제안합니다.</p>
             <p>클리어런스 랩은 <strong>“지식은 실천할 때 비로소 가치가 생긴다.”</strong>는 철학을 바탕으로 이 앱을 만들었습니다.</p>
           </div>
         </div>
 
         <div class="usage-page-grid">
-          <section class="usage-page-section wide">
+        <section class="usage-page-section">
             <h3>주요 기능</h3>
             <div class="usage-feature-list">
               <div class="usage-feature-item"><span class="usage-feature-dot"></span><span>책, 영화, 강의, 유튜브 등 다양한 지식을 한곳에 저장</span></div>
@@ -1027,20 +1071,26 @@
             </div>
           </section>
 
+        <section class="usage-page-section">
+            <h3>내 데이터는 내가 소유합니다</h3>
+            <p>Nyang Insight의 노트는 기본적으로 앱 폴더 안의 <strong>notes.json</strong> 파일에 저장됩니다. 로그인 없이 내 PC 안에서 사용할 수 있고, 로컬 AI를 사용하면 분석 과정도 내 PC 안에서 처리됩니다. 다만 앱 폴더 자체를 삭제하면 저장된 노트도 함께 사라질 수 있으니, 중요한 노트는 백업해 주세요.</p>
+          </section>
+
           <section class="usage-page-section">
             <h3>로컬 AI 지원</h3>
-            <p>Nyang Insight는 API는 물론 로컬 AI도 지원합니다. 로컬 AI를 사용하면 별도의 API 비용 없이 내 PC에서 AI와 대화할 수 있습니다.</p>
+            <p>Nyang Insight는 API는 물론 로컬 AI도 지원합니다. 로컬 AI를 사용하면 별도의 API 비용 없이 내 PC에서 AI와 대화할 수 있습니다. 단 속도는 느려질 수 있다는 점을 고려해주세요.</p>
           </section>
 
           <section class="usage-page-section">
             <h3>냥냥코치 연동</h3>
-            <p>Nyang Insight는 단독으로도 충분히 사용할 수 있습니다. 하지만 냥냥코치와 함께 사용하면, 생각은 Nyang Insight에서 정리하고 실행은 냥냥코치에서 이어갈 수 있습니다.</p>
+            <p>Nyang Insight는 <strong>단독으로도</strong> 충분히 사용할 수 있습니다. 하지만 <strong>플래너 냥냥코치와 함께 사용하면, 생각은 Nyang Insight에서 정리하고 실행은 냥냥코치에서 이어갈 수 있습니다.</strong></p>
             <p>AI와 대화하다가 떠오른 아이디어나 할 일을 버튼 한 번으로 냥냥코치 플래너에 보낼 수 있습니다.</p>
           </section>
 
           <section class="usage-page-section wide">
             <h3>우리의 목표</h3>
             <p>지식을 저장하는 것에서 끝나지 않고, 필요할 때 다시 꺼내 활용하여 행동으로 이어지게 만드는 것. 그것이 Nyang Insight를 만든 이유입니다.</p>
+            <p>복잡한 지식 관리 도구가 부담스러웠다면 이제 더 쉽게 시작해 보세요.</p>
           </section>
         </div>
 
@@ -1092,9 +1142,59 @@
         </div>
       </div>
     </div>
+  <!-- 아이디어 화면 -->
+  <div id="screenIdea" style="display:none; flex-direction:column; width:100%; height:100vh; overflow:hidden;">
+    <!-- 탑바 -->
+    <div class="topbar" style="flex-shrink:0;">
+      <div class="page-title">💡 아이디어 메모</div>
+      <button class="btn-primary" onclick="openIdeaModal()" style="padding:9px 18px; font-size:13px;">+ 아이디어 추가</button>
+    </div>
+    <!-- 태그 필터 -->
+    <div id="ideaTagFilter" style="display:flex; gap:8px; flex-wrap:wrap; padding:0 24px 14px; flex-shrink:0;"></div>
+    <!-- 카드 그리드 -->
+    <div style="flex:1; overflow-y:auto; padding:0 24px 32px;">
+      <div id="ideaGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px;"></div>
+      <div id="ideaEmpty" style="display:none; text-align:center; padding:80px 20px; color:var(--ink-3);">
+        <div style="font-size:40px; margin-bottom:12px;">💡</div>
+        <div style="font-size:16px; font-weight:600; color:var(--ink-2); margin-bottom:6px;">아직 아이디어가 없어요</div>
+        <div style="font-size:13px;">떠오르는 생각, 글감, 사업 아이디어를 바로 던져넣어 보세요!</div>
+      </div>
+    </div>
+  </div>
+
   </main>
 </div><!-- /app -->
 </div><!-- /appScreen -->
+
+<!-- 아이디어 추가/수정 모달 -->
+<div class="modal-overlay" id="ideaModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div class="modal-title" id="ideaModalHeading">💡 아이디어 추가</div>
+      <button class="modal-close" onclick="closeModal('ideaModal')">✕</button>
+    </div>
+    <div class="modal-body" style="gap:16px;">
+      <div class="field">
+        <label>한 줄 제목 <span style="font-weight:400; color:var(--ink-3);">(선택)</span></label>
+        <input type="text" id="idea-title" placeholder="예: 독서 기록 앱 아이디어, 뉴스레터 글감…">
+      </div>
+      <div class="field">
+        <label>내용</label>
+        <textarea id="idea-content" placeholder="떠오르는 대로 자유롭게 적어요. 완성된 문장이 아니어도 돼요." style="min-height:180px;"></textarea>
+      </div>
+      <div class="field">
+        <label>태그 <span style="font-weight:400; color:var(--ink-3);">(Enter로 추가)</span></label>
+        <div class="tag-input-wrap" id="ideaTagWrap" onclick="document.getElementById('ideaTagInput').focus()">
+          <input class="tag-inline-input" id="ideaTagInput" placeholder="글감, 사업, 여행, 루틴…" onkeydown="handleIdeaTagKey(event)">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('ideaModal')">취소</button>
+      <button class="btn-primary" onclick="saveIdea()">저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- AI 설정 모달 -->
 <div class="modal-overlay" id="aiModal">
@@ -1124,7 +1224,7 @@
           <option value="">— 선택해주세요 —</option>
           <option value="claude">Claude (Anthropic)</option>
           <option value="gpt">GPT (OpenAI)</option>
-          <option value="ollama">로컬 AI (Ollama)</option>
+          <option value="ollama">로컬 AI (Ollama) — 비용 0원, 속도는 느릴 수 있음</option>
         </select>
       </div>
 
@@ -1159,8 +1259,9 @@
           </select>
         </div>
         <div style="background:var(--paper-2);border-radius:8px;padding:12px;font-size:12px;color:var(--ink-2);line-height:1.7;">
-          💡 Ollama가 없으면 <a href="https://ollama.com" target="_blank" style="color:var(--accent-2);">ollama.com</a>에서 무료 설치<br>
-          설치 후 터미널에서: <code style="background:#fff;padding:2px 6px;border-radius:4px;">ollama pull llama3.2</code>
+          💡 로컬 AI는 API 비용이 0원인 대신, 컴퓨터 성능과 자료 길이에 따라 속도가 느릴 수 있어요.<br>
+          Ollama가 없으면 <a href="https://ollama.com" target="_blank" style="color:var(--accent-2);">ollama.com</a>에서 무료 설치<br>
+          설치 후 터미널에서: <code style="background:#fff;padding:2px 6px;border-radius:4px;">ollama pull qwen2.5:7b</code>
         </div>
       </div>
     </div>
@@ -1217,73 +1318,254 @@
 
 <!-- ADD/EDIT MODAL -->
 <div class="modal-overlay" id="addModal">
-  <div class="modal">
+  <div class="modal" style="max-width:660px;">
+
     <div class="modal-header">
-      <div class="modal-title" id="modalHeading">새 노트 추가</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button id="aiBackBtn" onclick="switchAddTab('manual')" style="display:none; background:none; border:none; cursor:pointer; color:var(--ink-2); font-size:18px; padding:0 4px 0 0;">←</button>
+        <div class="modal-title" id="modalHeading">새 노트 추가</div>
+      </div>
       <button class="modal-close" onclick="closeModal('addModal')">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="field-row">
-        <div class="field" style="flex:2">
-          <label>제목 / 소스 이름</label>
-          <input type="text" id="f-title" placeholder="예: 미드나잇 라이브러리, 코세라 ML 강의…">
+
+    <!-- 탭 헤더 (수정 모드에선 숨김) -->
+    <div id="addModalTabBar" style="display:flex; gap:0; margin:0 28px 16px; border-radius:12px; background:var(--paper); border:1px solid var(--paper-3); padding:4px;">
+      <button id="tabManual" onclick="switchAddTab('manual')" style="flex:1; padding:10px 0; border:none; border-radius:9px; background:linear-gradient(135deg,#7F68FF 0%,#654DF1 100%); color:#fff; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.18s; display:flex; align-items:center; justify-content:center; gap:7px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <div><div style="font-size:13px;">직접 작성</div><div style="font-size:10px; font-weight:500; opacity:0.85;">내가 직접 정리하기</div></div>
+      </button>
+      <button id="tabAI" onclick="switchAddTab('ai')" style="flex:1; padding:10px 0; border:none; border-radius:9px; background:transparent; color:var(--ink-2); font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.18s; display:flex; align-items:center; justify-content:center; gap:7px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><circle cx="12" cy="8" r="4"/><path d="M8 8h8M7 12h10M9 16h6"/><circle cx="12" cy="12" r="10"/></svg>
+        <div><div style="font-size:13px;">AI 자동 정리</div><div style="font-size:10px; font-weight:500; opacity:0.75;">링크만 넣으면 AI가 정리해줘요</div></div>
+      </button>
+    </div>
+
+    <!-- ── 직접 작성 패널 ── -->
+    <div id="panelManual">
+      <div class="modal-body">
+        <div class="field-row" style="align-items:flex-start;">
+          <div class="field" style="flex:2;">
+            <label>제목 / 소스 이름</label>
+            <input type="text" id="f-title" placeholder="예: 미드나잇 라이브러리, 코세라 ML 강의…">
+          </div>
+          <div class="field" style="flex:1; position:relative;">
+            <label>소스 유형</label>
+            <!-- 드롭다운 토글 버튼 -->
+            <button type="button" id="sourceTypeToggle" onclick="toggleSourceTypeDropdown()"
+              style="display:flex; align-items:center; gap:8px; width:100%;
+                     padding:10px 12px; border-radius:12px; border:1.5px solid var(--paper-3);
+                     background:#fff; cursor:pointer; font-family:inherit; font-size:13px;
+                     font-weight:600; color:var(--ink); text-align:left; transition:border-color 0.15s;">
+              <span id="sourceTypeToggleIcon" style="display:flex; align-items:center; width:16px; height:16px; flex-shrink:0;"></span>
+              <span id="sourceTypeToggleLabel" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">책</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" id="sourceTypeChevron"
+                   style="width:14px; height:14px; color:var(--ink-3); transition:transform 0.2s; flex-shrink:0;">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <!-- 드롭다운 패널 -->
+            <div id="sourceTypeDropdown"
+              style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200;
+                     padding:10px; border-radius:12px; border:1.5px solid var(--paper-3);
+                     background:#fff; box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+              <div id="sourceTypeGrid" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+            </div>
+            <input type="hidden" id="f-type" value="book">
+          </div>
         </div>
-        <div class="field" style="flex:1">
-          <label>소스 유형</label>
-          <select id="f-type">
-            <option value="book">📚 책</option>
-            <option value="lecture">🎓 강의</option>
-            <option value="movie">🎬 영화</option>
-            <option value="podcast">🎙️ 팟캐스트</option>
-            <option value="youtube">▶️ 유튜브</option>
-            <option value="article">📰 아티클</option>
-            <option value="other">✨ 기타</option>
-          </select>
+        <div class="field-row">
+          <div class="field" style="flex:1">
+            <label>날짜</label>
+            <input type="text" id="f-date" placeholder="예: 2024-06-27">
+          </div>
+          <div class="field" style="flex:2">
+            <label>출처(링크)</label>
+            <input type="text" id="f-author" placeholder="예: 저자 이름 또는 https://youtube.com/...">
+          </div>
+        </div>
+        <div class="field">
+          <label>메모 / 인상 깊은 내용</label>
+          <textarea id="f-excerpt" placeholder="기억하고 싶은 문장, 장면, 핵심 내용, 떠오른 생각을 한곳에 쭉 적어주세요…" style="min-height:150px;"></textarea>
+          <div class="excerpt-ai-actions">
+            <span style="font-size:12px; color:var(--ink-3);">길게 적어도 괜찮아요. AI가 핵심만 정리해드려요.</span>
+            <button type="button" class="excerpt-add-btn" onclick="summarizeManualMemo()">AI로 정리하기</button>
+          </div>
+          <div id="excerptAiPreview" class="excerpt-ai-preview">
+            <div class="excerpt-ai-preview-title">AI가 정리한 내용</div>
+            <div id="excerptAiPreviewBody" class="excerpt-ai-preview-body"></div>
+            <div class="excerpt-ai-preview-buttons">
+              <button type="button" class="btn-ghost" onclick="cancelManualMemoSummary()">취소</button>
+              <button type="button" class="btn-ghost" onclick="summarizeManualMemo()">다시 정리</button>
+              <button type="button" class="btn-primary" onclick="applyManualMemoSummary()">요약 적용</button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>💭 느낀 점 / 생각 / 활용 아이디어</label>
+          <textarea id="f-thought" placeholder="이 내용을 보고 든 생각, 적용하고 싶은 점, 나만의 해석, 활용 아이디어…"></textarea>
+        </div>
+        <div class="field">
+          <label>✅ 실천할 일 목록</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="action-todo-input" placeholder="실천할 행동 과제 입력... (예: 책 10페이지 읽기)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addActionTodo();}" style="flex:1;">
+            <button type="button" class="btn-ghost" onclick="addActionTodo()" style="flex-shrink:0; padding:10px 16px;">추가</button>
+          </div>
+          <div id="action-todo-list-edit" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
+        </div>
+        <div class="field">
+          <label>목적 / 태그 <span style="font-weight:400;color:var(--ink-3)">(Enter로 추가)</span></label>
+          <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagRawInput').focus()">
+            <input class="tag-inline-input" id="tagRawInput" placeholder="자기계발, 업무, 창의…" onkeydown="handleTagKey(event)">
+          </div>
         </div>
       </div>
-
-      <div class="field-row">
-        <div class="field" style="flex:1">
-          <label>날짜</label>
-          <input type="text" id="f-date" placeholder="예: 2024-06-27">
-        </div>
-        <div class="field" style="flex:2">
-          <label>출처(링크)</label>
-          <input type="text" id="f-author" placeholder="예: 저자 이름 또는 https://youtube.com/...">
-        </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" onclick="closeModal('addModal')">취소</button>
+        <button class="btn-primary" onclick="saveNote()">저장</button>
       </div>
+    </div>
 
-      <div class="field">
-        <label>발췌 / 인상 깊은 구절</label>
-        <div class="excerpt-list" id="excerptList"></div>
-        <button type="button" class="excerpt-add-btn" onclick="addExcerptField()">+ 발췌 추가</button>
-      </div>
+    <!-- ── AI 자동 정리 패널 ── -->
+    <div id="panelAI" style="display:none;">
 
-      <div class="field">
-        <label>💭 느낀 점 / 생각 / 활용 아이디어</label>
-        <textarea id="f-thought" placeholder="이 내용을 보고 든 생각, 적용하고 싶은 점, 나만의 해석, 활용 아이디어…"></textarea>
-      </div>
+      <!-- Step 1: 소스 입력 -->
+      <div id="aiStep1" style="padding:0 28px 28px; display:flex; flex-direction:column; gap:16px;">
+        <p style="font-size:14px; color:var(--ink); font-weight:600; margin:0;">링크만 넣으면 AI가 알아서 정리해드려요</p>
+        <p style="font-size:12.5px; color:var(--ink-2); margin:0; line-height:1.6;">유튜브, 웹사이트, 기사, PDF 등 다양한 소스의 핵심 내용을 AI가 분석해서 노트를 만들어 드립니다.</p>
 
-      <div class="field">
-        <label>✅ 실천할 일 목록</label>
+        <!-- 소스 유형 아이콘 -->
         <div style="display:flex; gap:8px;">
-          <input type="text" id="action-todo-input" placeholder="실천할 행동 과제 입력... (예: 책 10페이지 읽기)" onkeydown="if(event.key==='Enter'){event.preventDefault(); addActionTodo();}" style="flex:1;">
-          <button type="button" class="btn-ghost" onclick="addActionTodo()" style="flex-shrink:0; padding:10px 16px;">추가</button>
+          <button onclick="setAISourceType('youtube')" id="aiSrcYoutube" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border-radius:12px; border:1.5px solid var(--paper-3); background:#fff; cursor:pointer; font-size:11.5px; font-weight:600; color:var(--ink-2); transition:all 0.15s;">
+            <span style="font-size:20px;">▶️</span><span>유튜브</span>
+          </button>
+          <button onclick="setAISourceType('website')" id="aiSrcWebsite" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border-radius:12px; border:1.5px solid var(--paper-3); background:#fff; cursor:pointer; font-size:11.5px; font-weight:600; color:var(--ink-2); transition:all 0.15s;">
+            <span style="font-size:20px;">🌐</span><span>웹사이트</span>
+          </button>
+          <button onclick="setAISourceType('pdf')" id="aiSrcPdf" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border-radius:12px; border:1.5px solid var(--paper-3); background:#fff; cursor:pointer; font-size:11.5px; font-weight:600; color:var(--ink-2); transition:all 0.15s;">
+            <span style="font-size:20px;">📄</span><span>PDF 업로드</span>
+          </button>
+          <button onclick="setAISourceType('text')" id="aiSrcText" style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border-radius:12px; border:1.5px solid var(--paper-3); background:#fff; cursor:pointer; font-size:11.5px; font-weight:600; color:var(--ink-2); transition:all 0.15s;">
+            <span style="font-size:20px;">📋</span><span>텍스트 붙여넣기</span>
+          </button>
         </div>
-        <div id="action-todo-list-edit" style="display:flex; flex-direction:column; gap:6px; margin-top:8px;"></div>
+
+        <!-- 링크 입력 -->
+        <div id="aiLinkWrap" style="position:relative;">
+          <input type="text" id="aiSourceInput" placeholder="링크를 붙여넣으세요 (예: https://youtube.com/...)" style="width:100%; padding-right:42px;">
+          <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--ink-3); font-size:16px; pointer-events:none;">🔗</span>
+        </div>
+
+        <!-- PDF 업로드 -->
+        <div id="aiPdfWrap" style="display:none; flex-direction:column; gap:8px;">
+          <input type="file" id="aiPdfFileInput" accept="application/pdf" style="width:100%; border:1.5px dashed var(--paper-3); border-radius:12px; padding:12px; background:var(--paper-2); font-family:inherit; font-size:13px; color:var(--ink-2);">
+          <input type="text" id="aiPdfUrlInput" placeholder="또는 PDF URL/파일 경로를 붙여넣으세요" style="width:100%;">
+        </div>
+
+        <!-- 텍스트 붙여넣기 -->
+        <div id="aiTextWrap" style="display:none;">
+          <textarea id="aiTextInput" placeholder="요약하고 싶은 텍스트를 붙여넣으세요…" style="min-height:120px; width:100%;"></textarea>
+        </div>
+
+        <!-- 보안 안내 -->
+        <div style="display:flex; align-items:flex-start; gap:10px; background:var(--accent-bg); border:1px solid #DDD8FF; border-radius:10px; padding:11px 13px;">
+          <span style="font-size:15px; flex-shrink:0;">🔒</span>
+          <p style="font-size:12px; color:var(--ink-2); line-height:1.6; margin:0;">
+            <strong style="color:var(--ink);">내 데이터는 내 PC에만 저장됩니다</strong><br>
+            업로드한 링크/파일과 분석 결과는 외부로 전송되지 않고 로컬에서만 처리됩니다.
+          </p>
+        </div>
+
+        <button onclick="startAIAnalysis()" style="width:100%; background:linear-gradient(135deg,#7F68FF 0%,#654DF1 100%); color:#fff; border:none; border-radius:12px; padding:13px; font-family:inherit; font-size:14.5px; font-weight:700; cursor:pointer; transition:all 0.15s; box-shadow:0 4px 14px rgba(109,85,245,0.22);" onmouseover="this.style.filter='brightness(1.06)'" onmouseout="this.style.filter=''">AI 분석 시작</button>
+
+        <p style="font-size:12px; color:var(--ink-3); text-align:center; margin:0;">💡 팁. 긴 영상이나 문서는 시간이 조금 더 걸릴 수 있어요.</p>
       </div>
 
-      <div class="field">
-        <label>목적 / 태그 <span style="font-weight:400;color:var(--ink-3)">(Enter로 추가)</span></label>
-        <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagRawInput').focus()">
-          <input class="tag-inline-input" id="tagRawInput" placeholder="자기계발, 업무, 창의…" onkeydown="handleTagKey(event)">
+      <!-- Step 2: 분석 중 + 미리보기 -->
+      <div id="aiStep2" style="display:none; padding:0 28px 28px; flex-direction:column; gap:16px;">
+
+        <!-- 입력한 소스 표시 -->
+        <div style="background:var(--paper); border:1px solid var(--paper-3); border-radius:12px; padding:12px 14px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">입력한 소스</div>
+          <div style="display:flex; align-items:center; gap:10px; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+              <span id="aiSourceBadge" style="font-size:20px; flex-shrink:0;">▶️</span>
+              <div style="min-width:0;">
+                <div id="aiSourceTitle" style="font-size:14px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">분석 중…</div>
+                <div id="aiSourceUrl" style="font-size:11px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+              </div>
+            </div>
+            <button onclick="resetAIStep()" style="background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:18px; flex-shrink:0; padding:4px; line-height:1;">✕</button>
+          </div>
         </div>
+
+        <!-- 진행 상태 -->
+        <div id="aiProgressWrap" style="background:#fff; border:1px solid var(--paper-3); border-radius:12px; padding:18px;">
+          <div style="font-size:13.5px; font-weight:700; color:var(--ink); margin-bottom:14px;">AI 분석 중…</div>
+          <div style="display:flex; gap:4px; align-items:center; margin-bottom:14px;">
+            <div id="aiPStep1" style="display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-3); white-space:nowrap;">
+              <span id="aiPStep1Icon" style="width:18px; height:18px; border-radius:50%; background:var(--paper-3); display:inline-flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0;">○</span>소스 수집
+            </div>
+            <div style="flex:1; height:1px; background:var(--paper-3); min-width:6px;"></div>
+            <div id="aiPStep2" style="display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-3); white-space:nowrap;">
+              <span id="aiPStep2Icon" style="width:18px; height:18px; border-radius:50%; background:var(--paper-3); display:inline-flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0;">○</span>내용 분석
+            </div>
+            <div style="flex:1; height:1px; background:var(--paper-3); min-width:6px;"></div>
+            <div id="aiPStep3" style="display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-3); white-space:nowrap;">
+              <span id="aiPStep3Icon" style="width:18px; height:18px; border-radius:50%; background:var(--paper-3); display:inline-flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0;">○</span>핵심 추출
+            </div>
+            <div style="flex:1; height:1px; background:var(--paper-3); min-width:6px;"></div>
+            <div id="aiPStep4" style="display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-3); white-space:nowrap;">
+              <span id="aiPStep4Icon" style="width:18px; height:18px; border-radius:50%; background:var(--paper-3); display:inline-flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0;">○</span>정리 완료
+            </div>
+          </div>
+          <!-- 프로그레스 바 -->
+          <div style="background:var(--paper-3); border-radius:99px; height:6px; overflow:hidden; margin-bottom:10px;">
+            <div id="aiProgressBar" style="height:6px; border-radius:99px; background:linear-gradient(90deg,#7F68FF,#654DF1); width:0%; transition:width 0.7s ease;"></div>
+          </div>
+          <div id="aiProgressMsg" style="font-size:12px; color:var(--ink-3);">분석을 시작하고 있어요…</div>
+
+          <!-- 냥이 -->
+          <div id="aiCatWrap" style="display:flex; align-items:center; gap:14px; margin-top:14px; padding:12px; background:var(--paper); border-radius:10px;">
+            <span style="font-size:30px;">🐱</span>
+            <div id="aiCatMsg" style="font-size:13px; color:var(--accent-2); font-weight:600; line-height:1.5; background:var(--accent-bg); border-radius:8px; padding:8px 12px;">소스를 불러오고 있어요…</div>
+          </div>
+        </div>
+
+        <!-- AI 미리보기 (분석 완료 후) -->
+        <div id="aiPreviewWrap" style="display:none; background:#fff; border:1px solid var(--paper-3); border-radius:12px; padding:18px; flex-direction:column; gap:10px;">
+          <div style="font-size:13.5px; font-weight:700; color:var(--ink);">AI가 정리한 미리보기</div>
+          <div id="aiPreviewContent" style="font-size:13px; color:var(--ink-2); line-height:1.85;"></div>
+          <p style="font-size:12px; color:var(--ink-3); margin:4px 0 0;">더 보려면 아래에서 확인하고 편집할 수 있어요.</p>
+        </div>
+
+        <!-- 영상 기반 추가 질문 -->
+        <div id="aiFollowupWrap" style="display:none; background:#fff; border:1px solid var(--paper-3); border-radius:12px; padding:16px; flex-direction:column; gap:10px;">
+          <div>
+            <div style="font-size:13.5px; font-weight:700; color:var(--ink);">원문 기반으로 추가 묻기</div>
+            <div style="font-size:12px; color:var(--ink-3); line-height:1.6; margin-top:3px;">요약에 빠진 내용도 원문에서 찾아 답해드려요.</div>
+          </div>
+          <textarea id="aiFollowupQuestion" placeholder="예: 이 글에서 가장 중요한 개념을 더 쉽게 설명해줘" onkeydown="handleVideoFollowupKey(event)" style="width:100%; min-height:72px; border:1px solid var(--paper-3); border-radius:10px; padding:10px 12px; font-family:inherit; font-size:13px; line-height:1.6; resize:vertical; outline:none;"></textarea>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" onclick="askVideoFollowup('원문에서 가장 중요한 개념을 더 쉽게 설명해줘')" class="btn-ghost" style="font-size:12px; padding:7px 10px;">개념 쉽게</button>
+            <button type="button" onclick="askVideoFollowup('원문에서 예시나 사례를 더 찾아서 알려줘')" class="btn-ghost" style="font-size:12px; padding:7px 10px;">예시 찾기</button>
+            <button type="button" onclick="askVideoFollowup('요약에 빠진 중요한 내용을 찾아서 알려줘')" class="btn-ghost" style="font-size:12px; padding:7px 10px;">빠진 내용</button>
+            <button id="aiFollowupAskBtn" type="button" onclick="askVideoFollowup()" class="btn-primary" style="margin-left:auto; font-size:12px; padding:7px 14px;">질문하기</button>
+          </div>
+          <div id="aiFollowupAnswer" style="display:none; background:var(--paper); border:1px solid var(--paper-3); border-radius:10px; padding:12px; font-size:13px; line-height:1.75; color:var(--ink-2); white-space:pre-wrap;"></div>
+          <button id="aiFollowupMergeBtn" type="button" onclick="mergeFollowupIntoSummary(event)" class="btn-primary" style="display:none; align-self:flex-end; font-size:12px; padding:8px 14px;">요약에 반영</button>
+        </div>
+
+        <!-- 액션 버튼 (완료 후) -->
+        <div id="aiActionBtns" style="display:none; gap:10px; flex-direction:row;">
+          <button onclick="resetAIStep()" class="btn-ghost" style="flex:1;">다시 분석하기</button>
+          <button onclick="applyAIResult()" class="btn-primary" style="flex:2;">검토하고 저장하기</button>
+        </div>
+
+        <p style="font-size:11px; color:var(--ink-3); text-align:center; margin:0;">🔒 분석 결과는 내 PC에만 저장됩니다.</p>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-ghost" onclick="closeModal('addModal')">취소</button>
-      <button class="btn-primary" onclick="saveNote()">저장</button>
-    </div>
+
+    </div><!-- /panelAI -->
+
   </div>
 </div>
 
@@ -1297,7 +1579,7 @@
     <div class="modal-body">
       <div id="detail-meta" style="font-size:13px;color:var(--ink-3);display:flex;gap:12px;flex-wrap:wrap"></div>
       <div>
-        <div class="detail-section-label">발췌</div>
+        <div class="detail-section-label">메모</div>
         <div class="detail-excerpt" id="detail-excerpt"></div>
       </div>
       <div id="thought-section">
@@ -1335,7 +1617,7 @@
       </div>
       <h3 style="font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">나만의 루틴 비서, 냥냥코치</h3>
       <p style="font-size: 13.5px; color: var(--ink-2); line-height: 1.65; margin-bottom: 24px; padding: 0 10px;">
-        냥냥코치는 귀여운 고양이 코치 캐릭터와 함께 나만의 일상 루틴과 습관, 수면, 스케줄을 체계적으로 관리하는 해빗 트래커 앱입니다.<br><br>
+        냥냥코치는 실행 코치들이 귀찮음을 이겨내도록 도와주는<br>플래너 앱입니다.<br>완벽한 계획보다 실천이 더 중요하다는 철학으로 만들어졌습니다.<br><br>
         Nyang Insight에서 계획한 <b>실천 과제</b>들을 모바일 냥냥코치로 전송하여 매일 일상 속에서 습관으로 실천해 보세요!
       </p>
       
@@ -1396,15 +1678,16 @@
 
 <!-- 소스 유형 추가 모달 -->
 <div class="modal-overlay" id="customSourceModal">
-  <div class="modal" style="max-width:360px;">
+  <div class="modal" style="max-width:400px;">
     <div class="modal-header">
       <div class="modal-title">✨ 소스 유형 추가</div>
       <button class="modal-close" onclick="closeModal('customSourceModal')">✕</button>
     </div>
-    <div class="modal-body" style="gap:12px;">
-      <div class="field" style="align-items: center;">
-        <label>이모지 (Emoji)</label>
-        <input type="text" id="newSourceEmoji" placeholder="✨" maxlength="2" style="font-size: 20px; text-align: center; width: 60px; padding: 6px;">
+    <div class="modal-body" style="gap:16px;">
+      <div class="field">
+        <label>아이콘 선택</label>
+        <div id="iconPickerGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;"></div>
+        <input type="hidden" id="newSourceIconKey" value="star">
       </div>
       <div class="field">
         <label>소스 유형 이름</label>
@@ -1424,24 +1707,30 @@
 let _supabase = null;
 
 const DEFAULT_SOURCES = {
-  book:    { emoji:'📚', label:'책',       cls:'src-book' },
-  lecture: { emoji:'🎓', label:'강의',     cls:'src-lecture' },
-  movie:   { emoji:'🎬', label:'영화',     cls:'src-movie' },
-  podcast: { emoji:'🎙️', label:'팟캐스트', cls:'src-podcast' },
-  youtube: { emoji:'▶️', label:'유튜브',   cls:'src-youtube' },
-  article: { emoji:'📰', label:'아티클',   cls:'src-article' },
-  other:   { emoji:'✨', label:'기타',     cls:'src-other' },
+  book:     { emoji:'📚', label:'책',        cls:'src-book' },
+  lecture:  { emoji:'🎓', label:'강의',      cls:'src-lecture' },
+  movie:    { emoji:'🎬', label:'영화',       cls:'src-movie' },
+  youtube:  { emoji:'▶️', label:'유튜브',    cls:'src-youtube' },
+  article:  { emoji:'📰', label:'아티클',    cls:'src-article' },
+  documentary: { emoji:'🎥', label:'다큐',   cls:'src-other' },
+  sns:      { emoji:'📱', label:'SNS/릴스',  cls:'src-other' },
+  seminar:  { emoji:'🏛️', label:'세미나',    cls:'src-other' },
+  experience: { emoji:'💡', label:'경험',    cls:'src-other' },
+  other:    { emoji:'✨', label:'기타',      cls:'src-other' },
 };
 
 const SVG_ICONS = {
-  all: `<svg class="line-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>`,
-  book: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
-  lecture: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path></svg>`,
-  movie: `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>`,
-  podcast: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"></path></svg>`,
-  youtube: `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>`,
-  article: `<svg class="line-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
-  other: `<svg class="line-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
+  all:        `<svg class="line-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>`,
+  book:       `<svg class="line-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`,
+  lecture:    `<svg class="line-icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path></svg>`,
+  movie:      `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>`,
+  youtube:    `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2" ry="2"></rect><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>`,
+  article:    `<svg class="line-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>`,
+  documentary:`<svg class="line-icon" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.82v6.362a1 1 0 0 1-1.447.893L15 14v-4z"></path><rect x="2" y="6" width="13" height="12" rx="2"></rect></svg>`,
+  sns:        `<svg class="line-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`,
+  seminar:    `<svg class="line-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+  experience: `<svg class="line-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+  other:      `<svg class="line-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`
 };
 
 function getLineIcon(key, fallbackEmoji = '✨') {
@@ -1486,35 +1775,190 @@ function renderSidebarSources() {
 }
 
 function populateSourceTypeDropdown() {
-  const select = document.getElementById('f-type');
-  if (!select) return;
-  select.innerHTML = Object.entries(SOURCE).map(([key, item]) => {
-    return `<option value="${key}">${item.emoji} ${item.label}</option>`;
-  }).join('');
+  renderSourceTypeGrid();
+}
+
+function renderSourceTypeGrid(selectedKey) {
+  const grid = document.getElementById('sourceTypeGrid');
+  if (!grid) return;
+  const current = selectedKey || document.getElementById('f-type')?.value || 'book';
+  updateSourceTypeToggle(current);
+
+  grid.innerHTML = Object.entries(SOURCE).map(([key, item]) => {
+    const isDefault = !!DEFAULT_SOURCES[key];
+    const isSelected = key === current;
+    const selStyle = isSelected
+      ? 'border-color:var(--accent-2); background:var(--accent-bg); color:var(--accent-2);'
+      : 'border-color:var(--paper-3); background:#fff; color:var(--ink-2);';
+    const deleteBtn = !isDefault
+      ? `<button onclick="deleteCustomSourceType(event,'${key}')" title="삭제"
+           class="src-delete-btn"
+           style="position:absolute; top:-6px; right:-6px; width:17px; height:17px;
+                  border-radius:50%; background:#ff5f57; border:2px solid #fff; color:#fff;
+                  font-size:9px; font-weight:700; cursor:pointer;
+                  align-items:center; justify-content:center; padding:0;
+                  opacity:0; transition:opacity 0.15s; display:flex;">✕</button>`
+      : '';
+    return `<button type="button" onclick="selectSourceType('${key}')"
+        class="src-type-btn"
+        style="position:relative; display:flex; flex-direction:column; align-items:center;
+               gap:3px; padding:7px 9px; border-radius:10px; border:1.5px solid;
+               cursor:pointer; font-family:inherit; font-size:11px; font-weight:600;
+               min-width:48px; flex-shrink:0; transition:all 0.15s; ${selStyle}"
+        data-src-key="${key}"
+        onmouseenter="const d=this.querySelector('.src-delete-btn');if(d)d.style.opacity='1'"
+        onmouseleave="const d=this.querySelector('.src-delete-btn');if(d)d.style.opacity='0'">
+      ${getLineIcon(key, item.emoji)}
+      <span style="font-size:10.5px; white-space:nowrap;">${item.label}</span>
+      ${deleteBtn}
+    </button>`;
+  }).join('') +
+  // + 추가 버튼
+  `<button type="button" onclick="openAddSourceTypeModal()"
+      style="display:flex; flex-direction:column; align-items:center; gap:4px;
+             padding:8px 10px; border-radius:10px; border:1.5px dashed var(--paper-3);
+             cursor:pointer; font-family:inherit; font-size:11px; font-weight:600;
+             min-width:52px; background:transparent; color:var(--ink-3); transition:all 0.15s;"
+      onmouseover="this.style.borderColor='var(--accent-2)'; this.style.color='var(--accent-2)'"
+      onmouseout="this.style.borderColor='var(--paper-3)'; this.style.color='var(--ink-3)'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <span style="font-size:10.5px;">추가</span>
+  </button>`;
+}
+
+function toggleSourceTypeDropdown() {
+  const dropdown = document.getElementById('sourceTypeDropdown');
+  const chevron = document.getElementById('sourceTypeChevron');
+  const toggle = document.getElementById('sourceTypeToggle');
+  if (!dropdown) return;
+  const isOpen = dropdown.style.display !== 'none';
+  dropdown.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+  if (toggle) toggle.style.borderColor = isOpen ? 'var(--paper-3)' : 'var(--accent-2)';
+}
+
+function closeSourceTypeDropdown() {
+  const dropdown = document.getElementById('sourceTypeDropdown');
+  const chevron = document.getElementById('sourceTypeChevron');
+  const toggle = document.getElementById('sourceTypeToggle');
+  if (dropdown) dropdown.style.display = 'none';
+  if (chevron) chevron.style.transform = '';
+  if (toggle) toggle.style.borderColor = 'var(--paper-3)';
+}
+
+function updateSourceTypeToggle(key) {
+  const item = SOURCE[key];
+  if (!item) return;
+  const iconEl = document.getElementById('sourceTypeToggleIcon');
+  const labelEl = document.getElementById('sourceTypeToggleLabel');
+  if (iconEl) iconEl.innerHTML = getLineIcon(key, item.emoji);
+  if (labelEl) labelEl.textContent = item.label;
+}
+
+function selectSourceType(key) {
+  const hidden = document.getElementById('f-type');
+  if (hidden) hidden.value = key;
+  updateSourceTypeToggle(key);
+  renderSourceTypeGrid(key);
+  closeSourceTypeDropdown();
+}
+
+function deleteCustomSourceType(event, key) {
+  event.stopPropagation();
+  if (DEFAULT_SOURCES[key]) return; // 기본 유형은 삭제 불가
+  const item = SOURCE[key];
+  if (!confirm(`'${item?.label}' 유형을 삭제할까요?\n이 유형으로 저장된 노트의 유형은 '기타'로 바뀌어요.`)) return;
+  // 해당 유형 노트를 'other'로 변경
+  notes = notes.filter ? notes : [];
+  notes.forEach(n => { if (n.type === key) n.type = 'other'; });
+  save();
+  delete SOURCE[key];
+  saveCustomSources();
+  renderSidebarSources();
+  renderSourceTypeGrid();
+  showToast('🗑️ 소스 유형을 삭제했어요.');
 }
 
 function openAddSourceTypeModal() {
-  document.getElementById('newSourceEmoji').value = '✨';
   document.getElementById('newSourceLabel').value = '';
+  document.getElementById('newSourceIconKey').value = 'star';
+  renderIconPicker('star');
   document.getElementById('customSourceModal').classList.add('open');
+  setTimeout(() => document.getElementById('newSourceLabel').focus(), 100);
+}
+
+// 아이콘 피커에 사용할 라인 SVG 아이콘 목록
+const ICON_PICKER_ITEMS = [
+  { key: 'star',      svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`, label:'별' },
+  { key: 'pen',       svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`, label:'펜' },
+  { key: 'mic',       svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"></path></svg>`, label:'마이크' },
+  { key: 'music',     svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`, label:'음악' },
+  { key: 'globe',     svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`, label:'웹' },
+  { key: 'camera',    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>`, label:'카메라' },
+  { key: 'coffee',    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`, label:'카페' },
+  { key: 'heart',     svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`, label:'하트' },
+  { key: 'map',       svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>`, label:'여행' },
+  { key: 'zap',       svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`, label:'아이디어' },
+  { key: 'message',   svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`, label:'대화' },
+  { key: 'target',    svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`, label:'목표' },
+  { key: 'tool',      svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`, label:'도구' },
+  { key: 'trending',  svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>`, label:'트렌드' },
+  { key: 'users',     svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`, label:'사람' },
+  { key: 'plus',      svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>`, label:'기타' },
+];
+
+// 아이콘 피커 renderIconPicker
+function renderIconPicker(selectedKey) {
+  const grid = document.getElementById('iconPickerGrid');
+  if (!grid) return;
+  grid.innerHTML = ICON_PICKER_ITEMS.map(({ key, svg, label }) => {
+    const isSel = key === selectedKey;
+    const selStyle = isSel
+      ? 'border-color:var(--accent-2); background:var(--accent-bg); color:var(--accent-2);'
+      : 'border-color:var(--paper-3); background:#fff; color:var(--ink-2);';
+    return `<button type="button" onclick="selectPickerIcon('${key}')"
+        style="display:flex; flex-direction:column; align-items:center; gap:4px;
+               padding:8px 7px; border-radius:10px; border:1.5px solid;
+               cursor:pointer; font-family:inherit; min-width:48px;
+               transition:all 0.15s; ${selStyle}">
+      <span style="width:20px; height:20px; display:flex; align-items:center; justify-content:center;">
+        ${svg.replace(/width="[^"]*" height="[^"]*"/g, 'width="20" height="20"').replace(/<svg /, '<svg width="20" height="20" ')}
+      </span>
+      <span style="font-size:9.5px; white-space:nowrap; color:inherit;">${label}</span>
+    </button>`;
+  }).join('');
+}
+
+function selectPickerIcon(key) {
+  document.getElementById('newSourceIconKey').value = key;
+  renderIconPicker(key);
 }
 
 function saveCustomSourceType() {
-  const emoji = document.getElementById('newSourceEmoji').value.trim() || '✨';
+  const iconKey = document.getElementById('newSourceIconKey').value || 'star';
   const label = document.getElementById('newSourceLabel').value.trim();
   if (!label) {
-    alert('소스 유형 이름을 입력해주세요.');
+    showToast('소스 유형 이름을 입력해주세요.', 'error');
     return;
   }
-  const key = 'custom_' + Date.now();
-  SOURCE[key] = {
-    emoji: emoji,
+  const pickerItem = ICON_PICKER_ITEMS.find(i => i.key === iconKey);
+  const customKey = 'custom_' + Date.now();
+
+  // SVG_ICONS에도 추가해서 사이드바/그리드에서도 라인 아이콘으로 표시
+  SVG_ICONS[customKey] = pickerItem
+    ? pickerItem.svg.replace(/<svg /, '<svg class="line-icon" ')
+    : SVG_ICONS['plus'];
+
+  SOURCE[customKey] = {
+    emoji: '✨',
     label: label,
-    cls: 'src-other'
+    cls: 'src-other',
+    iconKey: iconKey,
   };
   saveCustomSources();
   renderSidebarSources();
-  populateSourceTypeDropdown();
+  renderSourceTypeGrid(customKey);
+  selectSourceType(customKey);
   closeModal('customSourceModal');
   showToast('✨ 새 소스 유형이 추가되었어요!');
 }
@@ -1745,11 +2189,11 @@ function renderStats(filtered) {
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon-wrap insight-icon"><svg class="line-icon" viewBox="0 0 24 24" style="width:20px; height:20px; stroke-width:2.2px;"><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 16l-1.7-5L6 9.3l4.3-1.7L12 3z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"></path></svg></div>
+      <div class="stat-icon-wrap insight-icon"><svg class="line-icon" viewBox="0 0 24 24" style="width:20px; height:20px; stroke-width:2.2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
       <div>
-        <div class="stat-val">${Math.max(total + tagCount, total)}</div>
-        <div class="stat-lbl">인사이트</div>
-        <div class="stat-sub">AI가 발견한 인사이트</div>
+        <div class="stat-val">${(() => { try { return JSON.parse(localStorage.getItem('ni_ideas') || '[]').length; } catch(e) { return 0; } })()}</div>
+        <div class="stat-lbl">아이디어</div>
+        <div class="stat-sub">저장된 아이디어 수</div>
       </div>
     </div>
   `;
@@ -1785,57 +2229,232 @@ function renderTagNav() {
   }).join('');
 }
 
-function addExcerptField(value = '') {
-  const list = document.getElementById('excerptList');
-  if (!list) return;
-  const row = document.createElement('div');
-  row.className = 'excerpt-entry';
-  row.innerHTML = `
-    <textarea class="excerptField" placeholder="기억하고 싶은 문장이나 장면, 핵심 내용을 적어주세요…"></textarea>
-    <button type="button" class="excerpt-remove-btn" onclick="removeExcerptField(this)" aria-label="발췌 삭제">×</button>
-  `;
-  row.querySelector('textarea').value = value;
-  list.appendChild(row);
-  updateExcerptRemoveButtons();
-}
-
-function removeExcerptField(button) {
-  const row = button.closest('.excerpt-entry');
-  if (row) row.remove();
-  updateExcerptRemoveButtons();
-}
-
-function updateExcerptRemoveButtons() {
-  const rows = document.querySelectorAll('#excerptList .excerpt-entry');
-  rows.forEach(row => {
-    const button = row.querySelector('.excerpt-remove-btn');
-    if (button) button.style.visibility = rows.length > 1 ? 'visible' : 'hidden';
-  });
-}
-
 function setExcerptFields(excerpt = '') {
-  const list = document.getElementById('excerptList');
-  if (!list) return;
-  list.innerHTML = '';
-  const parts = excerpt
-    ? excerpt.split(/\n{2,}/).map(part => part.trim()).filter(Boolean)
-    : [''];
-  parts.forEach(part => addExcerptField(part));
+  const field = document.getElementById('f-excerpt');
+  if (field) field.value = excerpt || '';
+  cancelManualMemoSummary();
 }
 
 function getExcerptValue() {
-  return Array.from(document.querySelectorAll('#excerptList .excerptField'))
-    .map(field => field.value.trim())
-    .filter(Boolean)
-    .join('\n\n');
+  const field = document.getElementById('f-excerpt');
+  return field ? field.value.trim() : '';
+}
+
+let manualMemoSummaryDraft = '';
+
+function buildManualMemoSummaryPrompt(memo) {
+  return `다음은 사용자가 책, 강의, 영상, 영화, 아티클 등을 보며 자유롭게 적은 메모입니다.
+메모에 나온 내용을 하나도 빠짐없이 번호로 정리해주세요. 같은 주제끼리는 하나로 묶고, 각 번호 아래에 구체적인 예시나 실천법을 함께 써주세요.
+
+규칙:
+- 메모 전체를 처음부터 끝까지 읽고, 나온 내용을 모두 다루세요. 일부만 고르면 안 돼요.
+- 같은 주제나 연결되는 내용은 하나의 포인트로 묶어도 돼요.
+- main은 그 포인트의 핵심을 한 문장으로, "무엇이 왜 중요한지"가 드러나게 쓰세요.
+- example은 main을 뒷받침하는 구체적 예시, 실천법, 팁. 메모에 없으면 빈 문자열.
+- 포인트 개수 제한 없음. 메모 내용이 많으면 많을수록 포인트도 많아도 돼요.
+- 원문에 없는 내용을 지어내지 마세요.
+- 한국어로만 답하고 한자는 쓰지 마세요.
+
+반드시 아래 JSON 형식만 출력하세요:
+{
+  "points": [
+    { "main": "핵심 개념과 관계를 설명하는 한 문장", "example": "이를 뒷받침하는 구체적 예시나 실천법" },
+    { "main": "핵심 개념 2", "example": "예시 2" }
+  ]
+}
+
+=== 사용자 메모 ===
+${memo}`;
+}
+
+function buildManualMemoChunkPrompt(chunk, index, total) {
+  return `다음은 사용자가 자유롭게 적은 긴 메모의 ${index + 1}/${total}번째 부분입니다.
+이 부분에 나온 내용을 처음부터 끝까지 하나도 빠짐없이 번호로 정리해주세요.
+
+규칙:
+- 이 조각 전체를 끝까지 읽고, 나온 내용을 모두 다루세요. 일부만 고르면 안 돼요.
+- 같은 주제나 연결되는 내용은 하나의 포인트로 묶어도 돼요.
+- main은 그 포인트의 핵심을 한 문장으로, "무엇이 왜 중요한지"가 드러나게 쓰세요.
+- example은 main을 뒷받침하는 구체적 예시나 실천법. 없으면 빈 문자열.
+- 포인트 개수 제한 없음.
+- 이 부분에 실제로 있는 내용만 쓰고, 지어내지 마세요.
+- 한국어로만 답하고 한자는 쓰지 마세요.
+
+반드시 아래 JSON 형식만 출력하세요:
+{
+  "points": [
+    { "main": "핵심 개념과 관계를 설명하는 한 문장", "example": "구체적 예시나 실천법" },
+    { "main": "핵심 개념 2", "example": "예시 2" }
+  ]
+}
+
+=== 메모 ${index + 1}/${total} ===
+${chunk}`;
+}
+
+function buildManualMemoMergePrompt(partSummaries) {
+  return `다음은 사용자의 긴 메모를 여러 파트로 나눠 정리한 결과입니다.
+아래 파트별 포인트를 하나도 빠짐없이 모두 반영해서 하나로 합쳐주세요.
+
+규칙:
+- 모든 파트의 모든 포인트를 반영하세요. 임의로 버리면 안 돼요.
+- 내용이 완전히 같은 포인트만 하나로 합치고, 비슷하더라도 다른 내용이면 따로 유지하세요.
+- main은 "무엇이 왜 중요하고 다른 개념과 어떻게 연결되는지"가 드러나는 한 문장.
+- example은 그 포인트를 뒷받침하는 구체적 예시나 실천법. 없으면 빈 문자열.
+- 포인트 개수 제한 없음. 원본 내용이 많으면 결과도 많아도 돼요.
+- 한국어로만 답하고 한자는 쓰지 마세요.
+
+반드시 아래 JSON 형식만 출력하세요:
+{
+  "points": [
+    { "main": "핵심 개념과 관계를 설명하는 한 문장", "example": "구체적 예시나 실천법" },
+    { "main": "핵심 개념 2", "example": "예시 2" }
+  ]
+}
+
+=== 파트별 정리 ===
+${partSummaries.map((part, i) => `파트 ${i+1}\n${(part.points||[]).map(p => `- ${p.main}${p.example ? ' → ' + p.example : ''}`).join('\n')}`).join('\n\n')}`;
+}
+
+function formatManualMemoSummary(result) {
+  const points = Array.isArray(result.points) ? result.points.filter(p => p && p.main) : [];
+  if (!points.length) return '';
+  return points.map((p, i) => {
+    const main = `${i + 1}. ${String(p.main).trim()}`;
+    const example = p.example ? `   → ${String(p.example).trim()}` : '';
+    return example ? `${main}\n${example}` : main;
+  }).join('\n\n');
+}
+
+function showManualMemoPreview(text) {
+  manualMemoSummaryDraft = text;
+  const preview = document.getElementById('excerptAiPreview');
+  const body = document.getElementById('excerptAiPreviewBody');
+  if (body) {
+    // 번호 포인트 → HTML로 렌더링
+    const html = text
+      .split('\n\n')
+      .map(block => {
+        const lines = block.split('\n');
+        const main = lines[0] || '';
+        const example = lines[1] || '';
+        const isNumbered = /^\d+\./.test(main);
+        if (isNumbered && example.startsWith('   →')) {
+          return `<div style="margin-bottom:2px;">
+            <div style="font-weight:600; color:var(--ink); line-height:1.6;">${escHtml(main)}</div>
+            <div style="color:var(--ink-2); font-size:13px; line-height:1.6; padding-left:12px; border-left:2px solid var(--accent-2); margin:4px 0 0 4px;">${escHtml(example.replace('   → ', ''))}</div>
+          </div>`;
+        }
+        return `<div style="line-height:1.6; color:var(--ink-2);">${escHtml(block)}</div>`;
+      })
+      .join('');
+    body.innerHTML = html;
+  }
+  if (preview) preview.classList.add('open');
+}
+
+function setManualMemoPreviewLoading(message) {
+  const preview = document.getElementById('excerptAiPreview');
+  const body = document.getElementById('excerptAiPreviewBody');
+  if (body) body.textContent = message;
+  if (preview) preview.classList.add('open');
+}
+
+function cancelManualMemoSummary() {
+  manualMemoSummaryDraft = '';
+  const preview = document.getElementById('excerptAiPreview');
+  const body = document.getElementById('excerptAiPreviewBody');
+  if (body) body.textContent = '';
+  if (preview) preview.classList.remove('open');
+}
+
+async function summarizeManualMemo() {
+  const memo = getExcerptValue();
+  if (!memo) {
+    showToast('먼저 메모를 적어주세요.', 'error');
+    return;
+  }
+  if (!aiConfig) {
+    showToast('AI 연결 설정을 먼저 해주세요.', 'error');
+    openAISettings();
+    return;
+  }
+
+  const buttons = Array.from(document.querySelectorAll('#excerptAiPreview button, .excerpt-ai-actions button'));
+  const originalLabels = buttons.map(btn => btn.textContent);
+  buttons.forEach(btn => { btn.disabled = true; });
+  const mainBtn = document.querySelector('.excerpt-ai-actions button');
+  if (mainBtn) {
+    mainBtn.textContent = aiConfig.provider === 'ollama' ? '로컬 AI가 정리 중…' : 'AI가 정리 중…';
+  }
+
+  try {
+    const result = await summarizeManualMemoContent(memo, (stage, current, total) => {
+      if (stage === 'direct') {
+        setManualMemoPreviewLoading(aiConfig.provider === 'ollama'
+          ? '로컬 AI가 메모 전체를 정리 중입니다. 시간이 조금 걸릴 수 있어요…'
+          : 'AI가 메모 전체를 정리 중입니다…');
+      } else if (stage === 'chunk') {
+        setManualMemoPreviewLoading(aiConfig.provider === 'ollama'
+          ? `로컬 AI가 메모 ${current + 1}/${total}번째 부분을 정리 중입니다. 시간이 조금 걸릴 수 있어요…`
+          : `메모 ${current + 1}/${total}번째 부분을 정리 중입니다…`);
+      } else if (stage === 'merge') {
+        setManualMemoPreviewLoading('파트별 정리를 하나로 합치는 중입니다…');
+      }
+    });
+    const formatted = formatManualMemoSummary(result);
+    if (!formatted) throw new Error('정리할 내용을 찾지 못했어요.');
+    showManualMemoPreview(formatted);
+  } catch(e) {
+    showToast('AI 정리 실패: ' + e.message, 'error');
+  } finally {
+    buttons.forEach((btn, index) => {
+      btn.disabled = false;
+      btn.textContent = originalLabels[index];
+    });
+  }
+}
+
+async function summarizeManualMemoContent(memo, onProgress) {
+  if (memo.length <= CHUNK_THRESHOLD) {
+    onProgress('direct', 0, 1);
+    return await callAIRaw(buildManualMemoSummaryPrompt(memo));
+  }
+
+  const chunks = splitIntoChunks(memo, CHUNK_MAX_LEN);
+  const partSummaries = [];
+  for (let i = 0; i < chunks.length; i++) {
+    onProgress('chunk', i, chunks.length);
+    partSummaries.push(await callAIRaw(buildManualMemoChunkPrompt(chunks[i], i, chunks.length)));
+  }
+  onProgress('merge', chunks.length, chunks.length);
+  return await callAIRaw(buildManualMemoMergePrompt(partSummaries));
+}
+
+function applyManualMemoSummary() {
+  if (!manualMemoSummaryDraft) return;
+  const field = document.getElementById('f-excerpt');
+  if (field) field.value = manualMemoSummaryDraft;
+  cancelManualMemoSummary();
+  showToast('✅ AI 정리 내용을 적용했어요.');
 }
 
 function openAddModal(note = null) {
   editingId = note ? note.id : null;
   currentTags = note ? [...(note.tags || [])] : [];
   document.getElementById('modalHeading').textContent = note ? '노트 수정' : '새 노트 추가';
+
+  // 탭바: 수정 모드엔 숨김
+  const tabBar = document.getElementById('addModalTabBar');
+  if (tabBar) tabBar.style.display = note ? 'none' : 'flex';
+
+  // 항상 직접 작성 탭으로 시작
+  switchAddTab('manual');
+
   document.getElementById('f-title').value      = note ? note.title   : '';
-  document.getElementById('f-type').value       = note ? note.type    : 'book';
+  const typeVal = note ? note.type : 'book';
+  document.getElementById('f-type').value = typeVal;
+  renderSourceTypeGrid(typeVal);
   setExcerptFields(note ? (note.excerpt||'') : '');
   document.getElementById('f-thought').value    = note ? (note.thought||'') : '';
   document.getElementById('f-date').value       = note ? (note.date||'') : today();
@@ -1863,7 +2482,7 @@ function openDetail(id) {
     ${n.link ? `<span>출처: <a href="${escHtml(n.link)}" target="_blank" style="color:var(--accent-2);text-decoration:underline;">🔗 바로가기</a></span>` : ''}
     ${n.date ? `<span>📅 ${n.date}</span>` : ''}
   `;
-  document.getElementById('detail-excerpt').textContent = n.excerpt || '(발췌 없음)';
+  document.getElementById('detail-excerpt').textContent = n.excerpt || '(메모 없음)';
   const ts = document.getElementById('thought-section');
   if (n.thought) { ts.style.display = ''; document.getElementById('detail-thought').textContent = n.thought; }
   else ts.style.display = 'none';
@@ -1924,7 +2543,13 @@ function renderTagChips() {
   wrap.appendChild(input);
 }
 
-function today() { return new Date().toISOString().slice(0,10); }
+function today() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -1966,7 +2591,16 @@ function renderActionTodoListEdit() {
   `).join('');
 }
 
-['addModal','detailModal','customSourceModal'].forEach(id => {
+// 소스 유형 드롭다운 외부 클릭 시 닫기
+document.addEventListener('click', (e) => {
+  const toggle = document.getElementById('sourceTypeToggle');
+  const dropdown = document.getElementById('sourceTypeDropdown');
+  if (toggle && dropdown && !toggle.contains(e.target) && !dropdown.contains(e.target)) {
+    closeSourceTypeDropdown();
+  }
+});
+
+['detailModal','customSourceModal'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('click', e => { if (e.target.id === id) closeModal(id); });
 });
@@ -1984,24 +2618,28 @@ function showToast(msg, type='success') {
 
 // ─── 탭 전환 ───
 function switchTab(tab) {
-  const isChat = tab === 'chat';
   const activeBg = 'linear-gradient(135deg,#7F68FF 0%,#654DF1 100%)';
   const inactiveBg = '#fff';
   const inactiveColor = 'var(--ink)';
   const inactiveBorder = '1px solid var(--paper-3)';
   const activeBorder = '1px solid transparent';
-  const tabNotes = document.getElementById('tabNotes');
-  const tabChat = document.getElementById('tabChat');
-  document.getElementById('screenNotes').style.display = isChat ? 'none' : '';
-  document.getElementById('screenChat').style.display  = isChat ? 'flex' : 'none';
-  document.getElementById('sidebarNotes').style.display = isChat ? 'none' : '';
-  document.getElementById('sidebarChat').style.display  = isChat ? 'flex' : 'none';
-  tabNotes.style.background = isChat ? inactiveBg : activeBg;
-  tabNotes.style.color = isChat ? inactiveColor : '#fff';
-  tabNotes.style.border = isChat ? inactiveBorder : activeBorder;
-  tabChat.style.background = isChat ? activeBg : inactiveBg;
-  tabChat.style.color = isChat ? '#fff' : inactiveColor;
-  tabChat.style.border = isChat ? activeBorder : inactiveBorder;
+
+  document.getElementById('screenNotes').style.display = tab === 'notes' ? '' : 'none';
+  document.getElementById('screenChat').style.display  = tab === 'chat'  ? 'flex' : 'none';
+  document.getElementById('screenIdea').style.display  = tab === 'idea'  ? 'flex' : 'none';
+  document.getElementById('sidebarNotes').style.display = tab === 'notes' ? '' : 'none';
+  document.getElementById('sidebarChat').style.display  = tab === 'chat'  ? 'flex' : 'none';
+
+  ['tabNotes','tabChat','tabIdea'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isActive = (id === 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    el.style.background = isActive ? activeBg : inactiveBg;
+    el.style.color = isActive ? '#fff' : inactiveColor;
+    el.style.border = isActive ? activeBorder : inactiveBorder;
+  });
+
+  if (tab === 'idea') renderIdeaScreen();
 }
 
 // ─── AI 설정 (멀티 프로필) ───
@@ -2016,7 +2654,7 @@ function openAISettings(profileId = null) {
   document.getElementById('aiProvider').value    = p ? (p.provider || '') : '';
   document.getElementById('claudeKey').value     = (p && p.provider === 'claude') ? (p.key || '') : '';
   document.getElementById('gptKey').value        = (p && p.provider === 'gpt')    ? (p.key || '') : '';
-  document.getElementById('ollamaModel').value   = p ? (p.model || 'llama3.2') : 'llama3.2';
+  document.getElementById('ollamaModel').value   = p ? (p.model || 'qwen2.5:7b') : 'qwen2.5:7b';
   document.getElementById('aiModal')._editId     = p ? p.id : null;
   updateAIProviderUI();
   document.getElementById('aiModal').classList.add('open');
@@ -2099,7 +2737,7 @@ function updateAIStatus() {
   const names = { 
     claude: 'Claude (Anthropic)', 
     gpt: 'GPT (OpenAI)', 
-    ollama: '로컬 AI (Ollama)' 
+    ollama: '로컬 AI (Ollama, 비용 0원)' 
   };
   const providerName = names[aiConfig.provider];
   const checkIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-tag)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; margin-right:4px; display:inline-block; vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -2236,33 +2874,64 @@ async function sendChat() {
   const fallback = scored.slice(0, 5).map(x => x.n);
   const selectedNotes = relevant.length >= 3 ? relevant : [...new Set([...relevant, ...fallback])].slice(0, 10);
 
-  const noteSummary = selectedNotes.length > 0
-    ? selectedNotes.map(n =>
-        `[${n.title}] (${n.type}${n.author ? ', ' + n.author : ''})\n발췌: ${n.excerpt||''}\n느낀점: ${n.thought||''}\n활용아이디어: ${n.idea||''}\n태그: ${(n.tags||[]).join(', ')}`
-      ).join('\n\n---\n\n')
-    : '(아직 저장된 노트가 없어요)';
+  // ── 노트 / 아이디어 컨텍스트 구성 ──
+  const hasNotes = selectedNotes.length > 0;
+  const currentIdeas = (() => { try { return JSON.parse(localStorage.getItem('ni_ideas') || '[]'); } catch(e) { return []; } })();
+  const hasIdeas = currentIdeas.length > 0;
 
-  const systemPrompt = `당신은 개인 지식 에이전트입니다. 사용자는 책, 영화, 강의 및 개인적인 통찰력을 기록합니다. 당신의 역할은 단순히 노트를 검색하는 것이 아니라, 노트들을 적극적으로 연결하고 패턴을 찾아내며 새로운 통찰을 이끌어내는 것입니다.
+  // 둘 다 없으면 메시지 표시하고 전송 중단
+  if (!hasNotes && !hasIdeas) {
+    removeLoadingBubbles();
+    addChatBubble('ai', '먼저 노트나 아이디어를 쌓아보세요. 읽은 책, 본 영상, 떠오른 생각을 기록하면 AI가 연결해드릴게요.', false, userName, nickname);
+    isChatSending = false;
+    return;
+  }
+
+  const noteSummary = hasNotes
+    ? selectedNotes.map(n =>
+        `[${n.title}] (${n.type}${n.author ? ', ' + n.author : ''})\n발췌: ${n.excerpt||''}\n느낀점: ${n.thought||''}\n태그: ${(n.tags||[]).join(', ')}`
+      ).join('\n\n---\n\n')
+    : null;
+
+  const ideaSummary = hasIdeas
+    ? currentIdeas.map(i =>
+        `[${i.title || '제목 없음'}]\n${i.content||''}\n태그: ${(i.tags||[]).join(', ')}`
+      ).join('\n\n---\n\n')
+    : null;
+
+  // 상황별 컨텍스트 섹션 구성
+  let contextSection = '';
+  let roleDesc = '';
+  if (hasNotes && hasIdeas) {
+    roleDesc = '사용자가 외부 소스(책, 영상, 강의 등)에서 얻은 노트와 스스로 떠올린 아이디어를 함께 기록합니다. 노트와 아이디어를 연결해서 새로운 통찰을 이끌어내세요.';
+    contextSection = `=== 사용자의 노트 (${selectedNotes.length}개) ===\n${noteSummary}\n\n=== 사용자의 아이디어 (${currentIdeas.length}개) ===\n${ideaSummary}`;
+  } else if (hasNotes) {
+    roleDesc = '사용자가 책, 영상, 강의 등 외부 소스에서 얻은 노트를 기록합니다. 노트들을 연결해서 새로운 통찰을 이끌어내세요.';
+    contextSection = `=== 사용자의 노트 (${selectedNotes.length}개) ===\n${noteSummary}`;
+  } else {
+    roleDesc = '사용자가 스스로 떠올린 아이디어를 기록합니다. 아이디어들을 연결하고 발전시킬 수 있는 통찰을 제시하세요.';
+    contextSection = `=== 사용자의 아이디어 (${currentIdeas.length}개) ===\n${ideaSummary}`;
+  }
+
+  const systemPrompt = `당신은 개인 지식 에이전트입니다. ${roleDesc}
 
 엄격한 규칙:
 - 반드시 한국어로만 답변하세요.
-- 한자, 한문, 중국어 표현은 절대 사용하지 마세요. 예: 的, 是, 在, 我, 你, 了, 和, 这, 那 같은 문자를 쓰면 안 됩니다.
-- 한국어 단어도 한자가 아니라 한글로만 쓰세요. 예: 情報가 아니라 정보, 知識이 아니라 지식.
+- 한자, 한문, 중국어 표현은 절대 사용하지 마세요.
 - 이모지나 이모티콘은 절대 사용하지 마세요.
-- 제공된 노트 목록에 없는 허구의 내용을 지어내지 마세요.
-- 불필요한 인사말, 칭찬, 쓸데없는 미사여구는 생략하세요.
+- 제공된 내용에 없는 허구의 내용을 지어내지 마세요.
+- 불필요한 인사말, 칭찬, 미사여구는 생략하세요.
 - 간결하고 명확하며 실용적으로 답변하세요.
 
 답변 방법:
-1. 패턴 발견: 여러 노트에서 반복되는 주제, 모순 또는 보완적인 아이디어를 찾으세요. 사용자가 스스로 인지하지 못한 점을 짚어주세요.
-2. 아이디어 연결: 두 개 이상의 노트가 질문과 관련이 있다면 서로 연결하세요. "사용자님의 [A] 노트와 [B] 노트는 같은 맥락의 이야기를 하고 있습니다:"
-3. 새로운 통찰 도출: 노트를 단순히 요약하거나 나열하지 마세요. 노트들을 융합하여 사용자가 명시적으로 작성하지 않은 새로운 시각이나 실행 전략을 제시하세요.
-4. 구체성 유지: 막연한 조언 대신 즉시 실행 가능한 구체적인 행동을 알려주세요. (예: "더 많이 쓰세요" 대신 "매일 아침 200단어씩 글을 쓰세요")
-5. 솔직한 출처 인용: 노트를 인용할 때는 "[제목]에서:" 형식을 사용하세요. 만약 관련된 노트가 없다면 "관련 노트가 없지만,"이라고 밝히고 일반적이고 실용적인 답변을 제공하세요.
-6. 실행 우선: 마지막에는 사용자가 자신의 지식을 바탕으로 즉시 실행할 수 있는 구체적인 행동 1~3가지를 제시하세요.
+1. 패턴 발견: 반복되는 주제, 모순, 보완적인 아이디어를 찾아 사용자가 인지하지 못한 점을 짚어주세요.
+2. 연결: 노트와 아이디어 사이에서 연결점을 찾으세요. "[A]와 [B]는 같은 맥락입니다:" 형식으로.
+3. 새로운 통찰 도출: 단순 요약이 아니라 융합해서 새로운 시각이나 실행 전략을 제시하세요.
+4. 구체성 유지: 즉시 실행 가능한 구체적인 행동을 제시하세요.
+5. 출처 인용: "[제목]에서:" 형식으로. 관련 내용이 없으면 솔직하게 밝히세요.
+6. 실행 우선: 마지막에 즉시 실행할 수 있는 행동 1~3가지를 제시하세요.
 
-=== 사용자의 노트 (${selectedNotes.length}개 선택됨) ===
-${noteSummary}`;
+${contextSection}`;
 
   removeLoadingBubbles();
   addChatBubble('ai', '', true, userName, nickname);
@@ -2321,7 +2990,7 @@ async function callClaude(system, history) {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
+      max_tokens: 2200,
       system,
       messages: history
     })
@@ -2348,23 +3017,27 @@ async function callGPT(system, history) {
   return data.choices[0].message.content;
 }
 
-async function callOllama(system, history) {
+async function callOllama(system, history, opts = {}) {
   const koreanOnlyReminder = {
     role: 'system',
     content: '출력은 반드시 한국어 한글 문장으로만 작성하세요. 한자, 중국어, 일본어 문자와 이모지는 절대 출력하지 마세요.'
   };
+  const payload = {
+    model: aiConfig.model || 'qwen2.5:7b',
+    stream: false,
+    messages: [{ role: 'system', content: system }, koreanOnlyReminder, ...history],
+    options: {
+      temperature: opts.json ? 0.2 : 0.4,
+      repeat_penalty: 1.08,
+      num_predict: opts.json ? 3200 : 1200
+    }
+  };
+  if (opts.json) payload.format = 'json';
+
   const res = await fetch('http://localhost:11434/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: aiConfig.model || 'llama3.2',
-      stream: false,
-      messages: [{ role: 'system', content: system }, koreanOnlyReminder, ...history],
-      options: {
-        temperature: 0.4,
-        repeat_penalty: 1.08
-      }
-    })
+    body: JSON.stringify(payload)
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error);
@@ -2389,7 +3062,1445 @@ function closePromo() {
   }
 })();
 
+// ─── AI 자동 정리 탭 UI ───
+let currentAISourceType = 'youtube';
+let aiAnalysisResult = null; // 분석 결과 저장
+let aiLastFollowup = null; // 추가 질문 답변 저장
+
+function switchAddTab(tab) {
+  const isAI = tab === 'ai';
+  document.getElementById('panelManual').style.display = isAI ? 'none' : '';
+  document.getElementById('panelAI').style.display = isAI ? '' : 'none';
+
+  const tabManual = document.getElementById('tabManual');
+  const tabAI = document.getElementById('tabAI');
+  tabManual.style.background = isAI ? 'transparent' : 'linear-gradient(135deg,#7F68FF 0%,#654DF1 100%)';
+  tabManual.style.color = isAI ? 'var(--ink-2)' : '#fff';
+  tabAI.style.background = isAI ? 'linear-gradient(135deg,#7F68FF 0%,#654DF1 100%)' : 'transparent';
+  tabAI.style.color = isAI ? '#fff' : 'var(--ink-2)';
+
+  if (isAI) {
+    resetAIStep();
+  }
+}
+
+function setAISourceType(type) {
+  currentAISourceType = type;
+  const ids = ['youtube', 'website', 'pdf', 'text'];
+  ids.forEach(id => {
+    const btn = document.getElementById('aiSrc' + id.charAt(0).toUpperCase() + id.slice(1));
+    if (!btn) return;
+    if (id === type) {
+      btn.style.borderColor = 'var(--accent-2)';
+      btn.style.background = 'var(--accent-bg)';
+      btn.style.color = 'var(--accent-2)';
+    } else {
+      btn.style.borderColor = 'var(--paper-3)';
+      btn.style.background = '#fff';
+      btn.style.color = 'var(--ink-2)';
+    }
+  });
+
+  const linkWrap = document.getElementById('aiLinkWrap');
+  const textWrap = document.getElementById('aiTextWrap');
+  const pdfWrap = document.getElementById('aiPdfWrap');
+  if (type === 'text') {
+    if (linkWrap) linkWrap.style.display = 'none';
+    if (pdfWrap) pdfWrap.style.display = 'none';
+    if (textWrap) textWrap.style.display = '';
+  } else if (type === 'pdf') {
+    if (linkWrap) linkWrap.style.display = 'none';
+    if (textWrap) textWrap.style.display = 'none';
+    if (pdfWrap) pdfWrap.style.display = 'flex';
+  } else {
+    if (linkWrap) linkWrap.style.display = '';
+    if (textWrap) textWrap.style.display = 'none';
+    if (pdfWrap) pdfWrap.style.display = 'none';
+    const input = document.getElementById('aiSourceInput');
+    if (input) {
+      const placeholders = {
+        youtube: '유튜브 링크를 붙여넣으세요 (예: https://youtube.com/watch?v=...)',
+        website: '웹사이트 URL을 붙여넣으세요 (예: https://example.com/...)',
+        pdf: 'PDF 파일 경로 또는 URL을 붙여넣으세요',
+      };
+      input.placeholder = placeholders[type] || '링크를 붙여넣으세요…';
+    }
+  }
+}
+
+function resetAIStep() {
+  document.getElementById('aiStep1').style.display = 'flex';
+  document.getElementById('aiStep2').style.display = 'none';
+  aiAnalysisResult = null;
+  aiLastFollowup = null;
+  // 링크 입력 초기화
+  const input = document.getElementById('aiSourceInput');
+  if (input) input.value = '';
+  const textInput = document.getElementById('aiTextInput');
+  if (textInput) textInput.value = '';
+  const pdfInput = document.getElementById('aiPdfFileInput');
+  if (pdfInput) pdfInput.value = '';
+  const pdfUrlInput = document.getElementById('aiPdfUrlInput');
+  if (pdfUrlInput) pdfUrlInput.value = '';
+  // 소스 타입 기본으로
+  setAISourceType('youtube');
+}
+
+function setAIProgressStep(step, pct, msg, catMsg) {
+  // step: 1~4
+  const icons = ['aiPStep1Icon','aiPStep2Icon','aiPStep3Icon','aiPStep4Icon'];
+  icons.forEach((id, idx) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (idx < step) {
+      el.textContent = '✓';
+      el.style.background = 'var(--accent-2)';
+      el.style.color = '#fff';
+    } else if (idx === step - 1) {
+      el.textContent = '…';
+      el.style.background = 'var(--accent-2)';
+      el.style.color = '#fff';
+    } else {
+      el.textContent = '○';
+      el.style.background = 'var(--paper-3)';
+      el.style.color = 'var(--ink-3)';
+    }
+  });
+  const bar = document.getElementById('aiProgressBar');
+  if (bar) bar.style.width = pct + '%';
+  const msgEl = document.getElementById('aiProgressMsg');
+  if (msgEl) msgEl.textContent = msg;
+  const catEl = document.getElementById('aiCatMsg');
+  if (catEl) catEl.textContent = catMsg;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function getQuestionKeywords(question) {
+  return (question || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .map(w => w.trim())
+    .filter(w => w.length >= 2);
+}
+
+function splitTranscriptForSearch(text, maxLen = 900) {
+  const chunks = [];
+  let start = 0;
+  while (start < text.length) {
+    let end = Math.min(start + maxLen, text.length);
+    if (end < text.length) {
+      const spaceIdx = text.lastIndexOf(' ', end);
+      if (spaceIdx > start) end = spaceIdx;
+    }
+    const chunk = text.slice(start, end).trim();
+    if (chunk) chunks.push(chunk);
+    start = end + 1;
+  }
+  return chunks;
+}
+
+function findRelevantTranscriptContext(transcriptText, question) {
+  const keywords = getQuestionKeywords(question);
+  const chunks = splitTranscriptForSearch(transcriptText);
+  const scored = chunks.map((chunk, idx) => {
+    const lower = chunk.toLowerCase();
+    const score = keywords.reduce((sum, keyword) => {
+      return sum + (lower.includes(keyword) ? 2 : 0) + (keyword.length >= 3 && lower.includes(keyword.slice(0, 3)) ? 0.5 : 0);
+    }, 0);
+    return { chunk, idx, score };
+  }).sort((a, b) => b.score - a.score);
+
+  const picked = scored.filter(x => x.score > 0).slice(0, 5);
+  const fallback = scored.slice(0, 4);
+  return (picked.length ? picked : fallback)
+    .sort((a, b) => a.idx - b.idx)
+    .map(x => `[자막 일부 ${x.idx + 1}]\n${x.chunk}`)
+    .join('\n\n---\n\n');
+}
+
+// ─── 유튜브 자막 fetch (server.py 경유) ───
+async function fetchYouTubeTranscript(url) {
+  const res = await fetch('/api/youtube-transcript', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || '자막을 가져오지 못했어요.');
+  return data; // { text, lang, is_auto, char_count, video_id, available_langs }
+}
+
+// ─── 웹사이트 본문 fetch (server.py 경유) ───
+async function fetchWebsiteContent(url) {
+  const res = await fetch('/api/website-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || '웹사이트 본문을 가져오지 못했어요.');
+  return data; // { title, text, char_count, url }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      resolve(result.includes(',') ? result.split(',')[1] : result);
+    };
+    reader.onerror = () => reject(new Error('PDF 파일을 읽지 못했어요.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fetchPDFContent() {
+  const fileInput = document.getElementById('aiPdfFileInput');
+  const urlInput = document.getElementById('aiPdfUrlInput');
+  const file = fileInput?.files?.[0] || null;
+  const url = (urlInput?.value || '').trim();
+  const payload = {};
+
+  if (file) {
+    payload.filename = file.name;
+    payload.data_base64 = await fileToBase64(file);
+  } else if (url) {
+    payload.url = url;
+  } else {
+    throw new Error('PDF 파일을 선택하거나 PDF URL/경로를 입력해주세요.');
+  }
+
+  const res = await fetch('/api/pdf-content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || 'PDF 내용을 가져오지 못했어요.');
+  return data; // { title, text, char_count, filename }
+}
+
+// ─── 자막 텍스트를 적당한 길이의 청크로 분할 ───
+function splitIntoChunks(text, maxLen) {
+  const chunks = [];
+  let start = 0;
+  while (start < text.length) {
+    let end = Math.min(start + maxLen, text.length);
+    if (end < text.length) {
+      const spaceIdx = text.lastIndexOf(' ', end);
+      if (spaceIdx > start) end = spaceIdx;
+    }
+    const chunk = text.slice(start, end).trim();
+    if (chunk) chunks.push(chunk);
+    start = end + 1;
+  }
+  return chunks;
+}
+
+// ─── 청크 1개 요약 프롬프트 ───
+function buildChunkPrompt(chunkText, chunkIndex, totalChunks, lang) {
+  const langNote = (lang && lang !== 'ko')
+    ? `자막 언어: ${lang} (한국어로 요약해주세요)`
+    : '자막 언어: 한국어';
+  return `유튜브 영상 자막의 ${totalChunks}개 파트 중 ${chunkIndex + 1}번째 파트입니다.
+${langNote}
+
+=== 자막 텍스트 (파트 ${chunkIndex + 1}/${totalChunks}) ===
+${chunkText}
+===========================
+
+이 파트가 영상 전체 흐름에서 어떤 역할을 하는지 먼저 파악한 뒤, 핵심 내용 5~8개를 한국어로 추출해주세요.
+특히 인물, 개념, 사건, 예시, 결론 사이의 관계를 찾아 "무엇이 무엇 때문에 이어지는지" 설명하세요.
+각 핵심 내용은 제목만 쓰지 말고 "무엇이 중요한지 + 왜 중요한지"가 드러나게 1문장으로 설명하세요.
+아래 JSON 형식으로만 응답하세요. 순수 JSON만 출력하세요:
+{
+  "part_flow": "이 파트가 전체 이야기에서 맡는 역할 또는 흐름",
+  "relations": [
+    "요소 A와 요소 B의 관계: A 때문에 B가 중요해지거나 B로 이어진다는 식으로 설명",
+    "문제와 해결의 관계 또는 예시와 결론의 관계"
+  ],
+  "keypoints": [
+    "핵심 내용 1: 초등학생도 이해할 수 있게 구체적으로 설명",
+    "핵심 내용 2: 제목이 아니라 내용까지 설명",
+    "핵심 내용 3",
+    "핵심 내용 4",
+    "핵심 내용 5",
+    "핵심 내용 6 (선택)",
+    "핵심 내용 7 (선택)",
+    "핵심 내용 8 (선택)"
+  ]
+}
+규칙: 제목만 나열 금지, 어려운 용어는 쉬운 말로 풀어쓰기, 한국어만, 한자 금지, JSON만 출력`;
+}
+
+// ─── 청크 요약들을 합쳐 최종 노트 만들기 ───
+function buildMergePrompt(chunkSummaries, url, lang) {
+  const summaryText = chunkSummaries
+    .map((s, i) => `[파트 ${i+1}]\n흐름: ${s.part_flow || ''}\n관계:\n${(s.relations||[]).join('\n')}\n핵심:\n${(s.keypoints||[]).join('\n')}`)
+    .join('\n\n');
+  const langNote = (lang && lang !== 'ko') ? ' (영상은 영어지만 한국어로 정리)' : '';
+  return `다음은 유튜브 영상을 여러 파트로 나눠 요약한 내용입니다${langNote}.
+영상 URL: ${url}
+
+=== 파트별 요약 ===
+${summaryText}
+==================
+
+위 내용을 따로 노는 문장 목록이 아니라, 영상이 어떤 이야기를 어떤 순서로 전개하는지 보이도록 하나의 노트로 정리해주세요.
+반드시 요소 간 관계를 먼저 파악하세요. 예를 들어 "문제 제기 → 사례 → 원인 설명 → 해결책 → 결론"처럼 흐름을 잡고, 핵심 포인트도 그 흐름 안에서 설명하세요.
+서로 다른 소재가 나오면 따로 나열하지 말고, 같은 주제의 예시인지, 원인과 결과인지, 대비되는 관점인지, 결론을 뒷받침하는 근거인지 밝혀주세요.
+핵심 포인트는 모든 소재를 억지로 다 넣지 말고, 정말 중요한 7~10가지만 고르세요.
+각 핵심 포인트는 제목만 쓰지 말고 "짧은 제목: 초등학생도 이해할 수 있는 설명" 형태로 작성하세요.
+예: "더마 코스메틱 뜻: 피부가 예민하거나 문제가 있을 때 도움을 주도록 성분과 안전성을 더 꼼꼼히 따져 만든 화장품을 말한다."
+나쁜 예: "정통 더마 선택 시 주의사항"
+좋은 예: "정통 더마를 고를 때 볼 것: 광고 문구보다 실제 임상 자료, 저자극 테스트, 내 피부 고민에 맞는 성분인지 확인해야 한다."
+아래 JSON 형식으로만 응답하세요. 순수 JSON만 출력하세요:
+{
+  "title": "영상의 핵심 주제를 담은 제목 (30자 이내)",
+  "one_line_summary": "영상 전체를 한 문장으로 요약",
+  "flow_summary": "영상의 전개 흐름을 4~6문장으로 자연스럽게 요약. 문제-근거-예시-결론의 연결을 설명",
+  "relations": [
+    "요소 A와 B의 관계: A가 B로 이어지는 이유를 설명",
+    "문제와 해결책의 관계 또는 예시와 결론의 관계",
+    "서로 다른 소재들이 같은 주제를 어떻게 뒷받침하는지 설명"
+  ],
+  "keypoints": [
+    "핵심 포인트 1: 제목만 쓰지 말고 내용과 이유를 쉽게 설명",
+    "핵심 포인트 2: 어려운 용어가 나오면 뜻도 함께 설명",
+    "핵심 포인트 3",
+    "핵심 포인트 4",
+    "핵심 포인트 5",
+    "핵심 포인트 6",
+    "핵심 포인트 7",
+    "핵심 포인트 8 (선택)",
+    "핵심 포인트 9 (선택)",
+    "핵심 포인트 10 (선택)"
+  ],
+  "record_insights": [
+    "내 노트에 남길 만한 인사이트 1",
+    "내 노트에 남길 만한 인사이트 2",
+    "내 노트에 남길 만한 인사이트 3 (선택)"
+  ],
+  "tags": ["태그1", "태그2", "태그3"]
+}
+규칙: 제목형 목록 금지, 개요가 아니라 내용 설명, 쉬운 말 사용, 한국어만, 한자 금지, JSON만 출력`;
+}
+
+// ─── 짧은 자막 단일 요약 프롬프트 ───
+function buildChunkDirectPrompt(text, url, lang) {
+  const langNote = (lang && lang !== 'ko')
+    ? `자막 언어: ${lang} (한국어로 요약해주세요)`
+    : '자막 언어: 한국어';
+  return `다음은 유튜브 영상의 자막 텍스트입니다.
+영상 URL: ${url}
+${langNote}
+
+=== 자막 텍스트 ===
+${text}
+==================
+
+먼저 전체 맥락을 파악하세요. "무슨 문제를 제기하고, 어떤 근거와 예시로 설명하며, 어떤 결론으로 이어지는지"가 보여야 합니다.
+서로 다른 소재가 나오면 따로 나열하지 말고, 같은 주제의 예시인지, 원인과 결과인지, 대비되는 관점인지, 결론을 뒷받침하는 근거인지 밝혀주세요.
+핵심 포인트는 모든 소재를 억지로 다 넣지 말고, 정말 중요한 7~10가지만 고르세요.
+각 핵심 포인트는 제목만 쓰지 말고 "짧은 제목: 초등학생도 이해할 수 있는 설명" 형태로 작성하세요.
+예: "더마 코스메틱 뜻: 피부가 예민하거나 문제가 있을 때 도움을 주도록 성분과 안전성을 더 꼼꼼히 따져 만든 화장품을 말한다."
+나쁜 예: "정통 더마 선택 시 주의사항"
+좋은 예: "정통 더마를 고를 때 볼 것: 광고 문구보다 실제 임상 자료, 저자극 테스트, 내 피부 고민에 맞는 성분인지 확인해야 한다."
+
+아래 JSON 형식으로만 응답하세요. 순수 JSON만 출력하세요:
+{
+  "title": "영상 핵심 주제 제목 (30자 이내)",
+  "one_line_summary": "영상 전체를 한 문장으로 요약",
+  "flow_summary": "영상의 전개 흐름을 4~6문장으로 자연스럽게 요약. 문제-근거-예시-결론의 연결을 설명",
+  "relations": [
+    "요소 A와 B의 관계: A가 B로 이어지는 이유를 설명",
+    "문제와 해결책의 관계 또는 예시와 결론의 관계",
+    "서로 다른 소재들이 같은 주제를 어떻게 뒷받침하는지 설명"
+  ],
+  "keypoints": [
+    "핵심 포인트 1: 제목만 쓰지 말고 내용과 이유를 쉽게 설명",
+    "핵심 포인트 2: 어려운 용어가 나오면 뜻도 함께 설명",
+    "핵심 포인트 3",
+    "핵심 포인트 4",
+    "핵심 포인트 5",
+    "핵심 포인트 6",
+    "핵심 포인트 7",
+    "핵심 포인트 8 (선택)",
+    "핵심 포인트 9 (선택)",
+    "핵심 포인트 10 (선택)"
+  ],
+  "record_insights": [
+    "내 노트에 남길 만한 인사이트 1",
+    "내 노트에 남길 만한 인사이트 2",
+    "내 노트에 남길 만한 인사이트 3 (선택)"
+  ],
+  "tags": ["태그1", "태그2", "태그3"]
+}
+규칙: 제목형 목록 금지, 개요가 아니라 내용 설명, 쉬운 말 사용, 한국어만, 한자 금지, JSON만 출력`;
+}
+
+function normalizeContextSummary(aiResult) {
+  const keypoints = aiResult.keypoints || aiResult.excerpts || [];
+  const recordInsights = aiResult.record_insights || aiResult.recordInsights || [];
+  const sections = [];
+
+  if (aiResult.one_line_summary) sections.push(`[한 줄 요약]\n${aiResult.one_line_summary}`);
+  if (aiResult.flow_summary) sections.push(`[전체 흐름]\n${aiResult.flow_summary}`);
+  if (aiResult.relations && aiResult.relations.length) sections.push(`[맥락과 관계]\n${aiResult.relations.map(p => `- ${p}`).join('\n')}`);
+  if (keypoints.length) sections.push(`[핵심 포인트]\n${keypoints.map(p => `- ${p}`).join('\n')}`);
+  if (recordInsights.length) sections.push(`[기록할 인사이트]\n${recordInsights.map(p => `- ${p}`).join('\n')}`);
+
+  return {
+    one_line_summary: aiResult.one_line_summary || '',
+    flow_summary: aiResult.flow_summary || '',
+    relations: aiResult.relations || [],
+    keypoints,
+    record_insights: recordInsights,
+    excerpts: sections.length ? sections : (aiResult.excerpts || [])
+  };
+}
+
+// ─── AI 단일 호출 (JSON 파싱 재시도 포함) ───
+async function callAIRaw(prompt) {
+  if (!aiConfig) throw new Error('AI가 연결되지 않았어요. 설정에서 AI를 먼저 연결해주세요.');
+  const system = '너는 콘텐츠 요약 전문가야. 요청한 JSON 형식만 출력하고, 한국어로만 답해. 한자는 절대 쓰지 마.';
+  let reply = '';
+  if (aiConfig.provider === 'claude') {
+    reply = await callClaude(system, [{ role: 'user', content: prompt }]);
+  } else if (aiConfig.provider === 'gpt') {
+    reply = await callGPT(system, [{ role: 'user', content: prompt }]);
+  } else if (aiConfig.provider === 'ollama') {
+    reply = await callOllama(system, [{ role: 'user', content: prompt }], { json: true });
+  }
+  const clean = reply.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/```\s*$/m, '').trim();
+  try {
+    return JSON.parse(clean);
+  } catch(e) {
+    // JSON 파싱 실패 시 중괄호 추출 후 재시도 (Ollama 대비)
+    const match = clean.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+    throw new Error('AI가 올바른 형식으로 답하지 않았어요. 다시 시도해주세요.');
+  }
+}
+
+async function callAIText(system, prompt) {
+  if (!aiConfig) throw new Error('AI가 연결되지 않았어요. 설정에서 AI를 먼저 연결해주세요.');
+  if (aiConfig.provider === 'claude') {
+    return await callClaude(system, [{ role: 'user', content: prompt }]);
+  } else if (aiConfig.provider === 'gpt') {
+    return await callGPT(system, [{ role: 'user', content: prompt }]);
+  } else if (aiConfig.provider === 'ollama') {
+    return await callOllama(system, [{ role: 'user', content: prompt }]);
+  }
+  throw new Error('지원하지 않는 AI 방식이에요.');
+}
+
+// ─── 청크 분할 요약 컨트롤러 ───
+const CHUNK_THRESHOLD = 8000;  // 이 이상이면 분할 요약
+const CHUNK_MAX_LEN = 5000;    // 청크당 최대 글자 수
+
+async function summarizeTranscript(transcriptText, url, lang, onProgress) {
+  if (transcriptText.length <= CHUNK_THRESHOLD) {
+    // ── 짧은 영상: 바로 요약 ──
+    onProgress('direct', 0, 1);
+    const result = await callAIRaw(buildChunkDirectPrompt(transcriptText, url, lang));
+    onProgress('direct', 1, 1);
+    return result;
+  }
+
+  // ── 긴 영상: 전체 자막을 버리지 않고 여러 파트로 요약 → 합치기 ──
+  const chunks = splitIntoChunks(transcriptText, CHUNK_MAX_LEN);
+  const actualChunks = chunks.length;
+  const chunkSummaries = [];
+
+  for (let i = 0; i < actualChunks; i++) {
+    onProgress('chunk', i, actualChunks);
+    const summary = await callAIRaw(buildChunkPrompt(chunks[i], i, actualChunks, lang));
+    chunkSummaries.push(summary);
+  }
+
+  // 최종 합치기
+  onProgress('merge', actualChunks, actualChunks);
+  const final = await callAIRaw(buildMergePrompt(chunkSummaries, url, lang));
+  onProgress('done', actualChunks + 1, actualChunks + 1);
+  return final;
+}
+
+// ─── 메인 분석 함수 ───
+async function startAIAnalysis() {
+  let sourceValue = '';
+  if (currentAISourceType === 'text') {
+    sourceValue = (document.getElementById('aiTextInput')?.value || '').trim();
+  } else if (currentAISourceType === 'pdf') {
+    const pdfFile = document.getElementById('aiPdfFileInput')?.files?.[0];
+    const pdfUrl = (document.getElementById('aiPdfUrlInput')?.value || '').trim();
+    sourceValue = pdfFile ? pdfFile.name : pdfUrl;
+  } else {
+    sourceValue = (document.getElementById('aiSourceInput')?.value || '').trim();
+  }
+  if (!sourceValue) {
+    showToast('소스를 입력해주세요.', 'error');
+    return;
+  }
+
+  // 유튜브 탭인데 AI 미연결 시 경고
+  if (currentAISourceType === 'youtube' && !aiConfig) {
+    showToast('⚠️ AI를 먼저 연결해주세요. 설정 → AI 연결', 'error');
+    openAISettings();
+    return;
+  }
+
+  // Step 2 화면 전환
+  document.getElementById('aiStep1').style.display = 'none';
+  const step2 = document.getElementById('aiStep2');
+  step2.style.display = 'flex';
+
+  // 소스 표시
+  const srcBadges = { youtube: '▶️', website: '🌐', pdf: '📄', text: '📋' };
+  const srcEl = document.getElementById('aiSourceBadge');
+  const titleEl = document.getElementById('aiSourceTitle');
+  const urlEl = document.getElementById('aiSourceUrl');
+  if (srcEl) srcEl.textContent = srcBadges[currentAISourceType] || '📌';
+  if (titleEl) titleEl.textContent = currentAISourceType === 'text' ? '텍스트 입력' : sourceValue;
+  if (urlEl) urlEl.textContent = currentAISourceType === 'text' ? '직접 입력한 텍스트' : sourceValue;
+
+  const previewWrap = document.getElementById('aiPreviewWrap');
+  const actionBtns = document.getElementById('aiActionBtns');
+  const progressWrap = document.getElementById('aiProgressWrap');
+  const followupWrap = document.getElementById('aiFollowupWrap');
+  if (previewWrap) previewWrap.style.display = 'none';
+  if (actionBtns) actionBtns.style.display = 'none';
+  if (progressWrap) progressWrap.style.display = '';
+  if (followupWrap) followupWrap.style.display = 'none';
+  const followupAnswer = document.getElementById('aiFollowupAnswer');
+  if (followupAnswer) {
+    followupAnswer.style.display = 'none';
+    followupAnswer.textContent = '';
+  }
+  const followupMergeBtn = document.getElementById('aiFollowupMergeBtn');
+  if (followupMergeBtn) followupMergeBtn.style.display = 'none';
+  aiLastFollowup = null;
+
+  let result = null;
+
+  try {
+    if (currentAISourceType === 'youtube') {
+      // ── 유튜브: 자막 추출 → AI 요약 ──
+      setAIProgressStep(1, 15, '유튜브 자막을 가져오고 있어요…', '자막을 서버에서 불러오는 중이에요 🐾');
+      
+      let transcriptData;
+      try {
+        transcriptData = await fetchYouTubeTranscript(sourceValue);
+      } catch(e) {
+        // 자막 실패 → 에러 표시 후 Step 1로 복귀
+        showAIError(e.message);
+        return;
+      }
+
+      const langLabel = transcriptData.is_auto
+        ? `${transcriptData.lang} (자동생성)`
+        : transcriptData.lang;
+      const isLongTranscript = transcriptData.char_count > CHUNK_THRESHOLD;
+      const isLocalAI = aiConfig && aiConfig.provider === 'ollama';
+
+      setAIProgressStep(2, 35,
+        `자막 수집 완료 (${transcriptData.char_count.toLocaleString()}자, ${langLabel})${isLongTranscript ? ' — 분할 요약 시작' : ''}`,
+        isLocalAI
+          ? '로컬 AI는 조금 느릴 수 있어요. 영상 내용을 차근차근 읽는 중입니다.'
+          : (isLongTranscript ? '긴 영상이라 여러 파트로 나눠서 요약할게요 📚' : '자막을 다 읽었어요! AI한테 넘길게요 📖')
+      );
+      await sleep(500);
+
+      let aiResult;
+      try {
+        aiResult = await summarizeTranscript(
+          transcriptData.text,
+          sourceValue,
+          transcriptData.lang,
+          (phase, current, total) => {
+            if (phase === 'direct') {
+              setAIProgressStep(3, 65,
+                isLocalAI ? '로컬 AI가 핵심 내용을 요약 중입니다. 시간이 조금 걸릴 수 있어요…' : 'AI가 핵심 내용을 추출하고 있어요…',
+                isLocalAI ? '멈춘 게 아니라 영상 내용을 차근차근 읽는 중이에요.' : '핵심 내용을 쏙쏙 뽑아볼게요!'
+              );
+            } else if (phase === 'chunk') {
+              const pct = 40 + Math.round((current / total) * 40);
+              setAIProgressStep(3, pct,
+                isLocalAI ? `로컬 AI가 파트 ${current + 1}/${total} 요약 중입니다. 시간이 조금 걸릴 수 있어요…` : `파트 ${current + 1}/${total} 요약 중…`,
+                isLocalAI ? `${current + 1}번째 파트를 차근차근 읽는 중이에요. 영상이 길수록 느릴 수 있습니다.` : `${current + 1}번째 파트를 읽고 있어요 🐾`
+              );
+            } else if (phase === 'merge') {
+              setAIProgressStep(3, 88,
+                isLocalAI ? '로컬 AI가 파트별 요약을 하나로 합치는 중입니다…' : '파트별 요약을 하나로 합치고 있어요…',
+                isLocalAI ? '마지막으로 전체 흐름을 정리하는 중이에요. 조금만 기다려주세요.' : '모든 파트를 하나로 정리할게요 ✍️'
+              );
+            }
+          }
+        );
+      } catch(e) {
+        showAIError('AI 요약 실패: ' + e.message);
+        return;
+      }
+
+      const contextSummary = normalizeContextSummary(aiResult);
+      result = {
+        title: aiResult.title || '제목 없음',
+        type: 'youtube',
+        author: '',
+        link: sourceValue,
+        ...contextSummary,
+        tags: aiResult.tags || [],
+        transcript_lang: transcriptData.lang,
+        transcript_is_auto: transcriptData.is_auto,
+        transcript_text: transcriptData.text,
+        was_chunked: isLongTranscript,
+      };
+
+    } else if (currentAISourceType === 'website') {
+      // ── 웹사이트: 본문 추출 → AI 요약 ──
+      const isLocalAI = aiConfig && aiConfig.provider === 'ollama';
+      setAIProgressStep(1, 20, '웹사이트 본문을 가져오고 있어요…', '페이지에서 읽을 수 있는 텍스트를 찾는 중이에요.');
+
+      let websiteData;
+      try {
+        websiteData = await fetchWebsiteContent(sourceValue);
+      } catch(e) {
+        showAIError(e.message);
+        return;
+      }
+
+      setAIProgressStep(2, 45,
+        `본문 수집 완료 (${websiteData.char_count.toLocaleString()}자)`,
+        isLocalAI ? '로컬 AI는 조금 느릴 수 있어요. 웹페이지 내용을 차근차근 읽는 중입니다.' : '본문을 읽었어요. AI가 정리해볼게요.'
+      );
+      await sleep(400);
+
+      setAIProgressStep(3, 70,
+        isLocalAI ? '로컬 AI가 웹사이트 내용을 요약 중입니다. 시간이 조금 걸릴 수 있어요…' : 'AI가 핵심 내용을 추출하고 있어요…',
+        isLocalAI ? '멈춘 게 아니라 글을 읽고 쉬운 말로 정리하는 중이에요.' : '핵심 내용을 쏙쏙 뽑아볼게요!'
+      );
+
+      let aiResult;
+      try {
+        aiResult = await summarizeSourceText(websiteData.text, websiteData.url, websiteData.title, (stage, current, total) => {
+          if (stage === 'chunk') {
+            setAIProgressStep(3, 55 + Math.round(((current + 1) / total) * 25),
+              isLocalAI ? `로컬 AI가 웹사이트 ${current + 1}/${total}번째 부분을 읽는 중입니다…` : `웹사이트 ${current + 1}/${total}번째 부분을 읽는 중…`,
+              '앞뒤 맥락과 요소 간 관계를 함께 파악하고 있어요.'
+            );
+          } else if (stage === 'merge') {
+            setAIProgressStep(3, 85, '전체 맥락을 하나로 연결하는 중입니다…', '파트별 내용을 관계 중심으로 합치고 있어요.');
+          }
+        });
+      } catch(e) {
+        showAIError('AI 요약 실패: ' + e.message);
+        return;
+      }
+      const contextSummary = normalizeContextSummary(aiResult);
+      result = {
+        title: aiResult.title || websiteData.title || '제목 없음',
+        type: 'article',
+        author: '',
+        link: websiteData.url || sourceValue,
+        ...contextSummary,
+        tags: aiResult.tags || [],
+        source_text: websiteData.text,
+        source_label: '웹사이트 원문',
+      };
+
+    } else if (currentAISourceType === 'pdf') {
+      // ── PDF: 텍스트 추출 → AI 요약 ──
+      const isLocalAI = aiConfig && aiConfig.provider === 'ollama';
+      setAIProgressStep(1, 20, 'PDF 내용을 읽고 있어요…', 'PDF에서 텍스트를 추출하는 중이에요.');
+
+      let pdfData;
+      try {
+        pdfData = await fetchPDFContent();
+      } catch(e) {
+        showAIError(e.message);
+        return;
+      }
+
+      setAIProgressStep(2, 45,
+        `PDF 텍스트 추출 완료 (${pdfData.char_count.toLocaleString()}자)`,
+        isLocalAI ? '로컬 AI는 조금 느릴 수 있어요. PDF 내용을 차근차근 읽는 중입니다.' : 'PDF 내용을 읽었어요. AI가 정리해볼게요.'
+      );
+      await sleep(400);
+
+      setAIProgressStep(3, 70,
+        isLocalAI ? '로컬 AI가 PDF 내용을 요약 중입니다. 시간이 조금 걸릴 수 있어요…' : 'AI가 핵심 내용을 추출하고 있어요…',
+        isLocalAI ? '멈춘 게 아니라 문서를 읽고 쉬운 말로 정리하는 중이에요.' : '핵심 내용을 쏙쏙 뽑아볼게요!'
+      );
+
+      let aiResult;
+      try {
+        aiResult = await summarizeSourceText(pdfData.text, '', pdfData.title, (stage, current, total) => {
+          if (stage === 'chunk') {
+            setAIProgressStep(3, 55 + Math.round(((current + 1) / total) * 25),
+              isLocalAI ? `로컬 AI가 PDF ${current + 1}/${total}번째 부분을 읽는 중입니다…` : `PDF ${current + 1}/${total}번째 부분을 읽는 중…`,
+              '문서의 앞뒤 맥락과 요소 간 관계를 함께 파악하고 있어요.'
+            );
+          } else if (stage === 'merge') {
+            setAIProgressStep(3, 85, '전체 맥락을 하나로 연결하는 중입니다…', '파트별 내용을 관계 중심으로 합치고 있어요.');
+          }
+        });
+      } catch(e) {
+        showAIError('AI 요약 실패: ' + e.message);
+        return;
+      }
+      const contextSummary = normalizeContextSummary(aiResult);
+      result = {
+        title: aiResult.title || pdfData.title || 'PDF 문서',
+        type: 'article',
+        author: '',
+        link: pdfData.filename || '',
+        ...contextSummary,
+        tags: aiResult.tags || [],
+        source_text: pdfData.text,
+        source_label: 'PDF 원문',
+      };
+
+    } else if (currentAISourceType === 'text') {
+      // ── 텍스트: 바로 AI 요약 ──
+      setAIProgressStep(1, 25, '텍스트를 분석하고 있어요…', '입력한 텍스트를 읽어보는 중이에요 📖');
+      await sleep(500);
+      setAIProgressStep(2, 50, 'AI가 핵심 내용을 추출하고 있어요…', '핵심 내용을 쏙쏙 뽑아볼게요!');
+
+      let aiResult;
+      try {
+        const isLocalAI = aiConfig && aiConfig.provider === 'ollama';
+        aiResult = await summarizeSourceText(sourceValue, '', '', (stage, current, total) => {
+          if (stage === 'chunk') {
+            setAIProgressStep(2, 45 + Math.round(((current + 1) / total) * 35),
+              isLocalAI ? `로컬 AI가 텍스트 ${current + 1}/${total}번째 부분을 읽는 중입니다…` : `텍스트 ${current + 1}/${total}번째 부분을 읽는 중…`,
+              '앞뒤 맥락과 요소 간 관계를 함께 파악하고 있어요.'
+            );
+          } else if (stage === 'merge') {
+            setAIProgressStep(3, 85, '전체 맥락을 하나로 연결하는 중입니다…', '파트별 내용을 관계 중심으로 합치고 있어요.');
+          }
+        });
+      } catch(e) {
+        showAIError('AI 요약 실패: ' + e.message);
+        return;
+      }
+      const contextSummary = normalizeContextSummary(aiResult);
+      result = {
+        title: aiResult.title || '제목 없음',
+        type: aiResult.type || 'other',
+        author: '',
+        link: '',
+        ...contextSummary,
+        tags: aiResult.tags || [],
+        source_text: sourceValue,
+        source_label: '붙여넣은 텍스트',
+      };
+
+    } else {
+      // fallback
+      setAIProgressStep(1, 30, '준비 중…', '');
+      await sleep(600);
+      showAIError('아직 지원하지 않는 소스 유형이에요.');
+      return;
+    }
+
+  } catch(e) {
+    showAIError('예상치 못한 오류가 발생했어요: ' + e.message);
+    return;
+  }
+
+  // ── 완료 ──
+  aiAnalysisResult = result;
+  setAIProgressStep(4, 100, '분석이 완료됐어요!', '다 됐어요! 결과를 확인해보세요 ✨');
+  await sleep(400);
+
+  if (progressWrap) progressWrap.style.display = 'none';
+  if (previewWrap) {
+    previewWrap.style.display = 'flex';
+    const contentEl = document.getElementById('aiPreviewContent');
+    if (contentEl) {
+      const langNote = result.transcript_lang
+        ? `<div style="margin-bottom:8px; font-size:11px; color:var(--ink-3); display:flex; gap:10px; flex-wrap:wrap;">
+            <span>🌐 자막 언어: ${result.transcript_lang}${result.transcript_is_auto ? ' (자동생성)' : ''}</span>
+            ${result.was_chunked ? '<span style=\"color:var(--accent-2)\">✦ 분할 요약</span>' : ''}
+           </div>`
+        : '';
+      const contextHtml = result.one_line_summary || result.flow_summary || (result.relations || []).length || (result.keypoints || []).length || (result.record_insights || []).length
+        ? `
+        ${result.one_line_summary ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">한 줄 요약</div>
+          <div style="color:var(--ink); font-size:13.5px; line-height:1.7;">${escHtml(result.one_line_summary)}</div>
+        </div>` : ''}
+        ${result.flow_summary ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">전체 흐름</div>
+          <div style="color:var(--ink-2); font-size:13px; line-height:1.7; white-space:pre-line;">${escHtml(result.flow_summary)}</div>
+        </div>` : ''}
+        ${(result.relations || []).length ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">맥락과 관계</div>
+          <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+            ${result.relations.map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+          </ul>
+        </div>` : ''}
+        ${(result.keypoints || []).length ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">핵심 포인트</div>
+          <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+            ${result.keypoints.map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+          </ul>
+        </div>` : ''}
+        ${(result.record_insights || []).length ? `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">기록할 인사이트</div>
+          <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+            ${result.record_insights.map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+          </ul>
+        </div>` : ''}
+        `
+        : `
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">핵심 내용</div>
+          <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+            ${(result.excerpts || []).map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+          </ul>
+        </div>`;
+
+      contentEl.innerHTML = `
+        ${langNote}
+        <div style="margin-bottom:12px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">제목(예시)</div>
+          <div style="font-size:14px; font-weight:600; color:var(--ink);">${escHtml(result.title)}</div>
+        </div>
+        ${contextHtml}
+        ${result.tags && result.tags.length ? `
+        <div>
+          <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">태그</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${result.tags.map(t => `<span style="background:var(--accent-bg); color:var(--accent-tag); border-radius:20px; padding:2px 10px; font-size:12px; font-weight:500;">#${escHtml(t)}</span>`).join('')}
+          </div>
+        </div>` : ''}
+      `;
+    }
+  }
+  if (actionBtns) actionBtns.style.display = 'flex';
+  if (followupWrap) {
+    followupWrap.style.display = (result.transcript_text || result.source_text) ? 'flex' : 'none';
+  }
+}
+
+function renderAIPreviewContent(result) {
+  const contentEl = document.getElementById('aiPreviewContent');
+  if (!contentEl || !result) return;
+  const langNote = result.transcript_lang
+    ? `<div style="margin-bottom:8px; font-size:11px; color:var(--ink-3); display:flex; gap:10px; flex-wrap:wrap;">
+        <span>🌐 자막 언어: ${result.transcript_lang}${result.transcript_is_auto ? ' (자동생성)' : ''}</span>
+        ${result.was_chunked ? '<span style=\"color:var(--accent-2)\">✦ 분할 요약</span>' : ''}
+       </div>`
+    : '';
+  const contextHtml = result.one_line_summary || result.flow_summary || (result.relations || []).length || (result.keypoints || []).length || (result.record_insights || []).length
+    ? `
+    ${result.one_line_summary ? `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">한 줄 요약</div>
+      <div style="color:var(--ink); font-size:13.5px; line-height:1.7;">${escHtml(result.one_line_summary)}</div>
+    </div>` : ''}
+    ${result.flow_summary ? `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">전체 흐름</div>
+      <div style="color:var(--ink-2); font-size:13px; line-height:1.7; white-space:pre-line;">${escHtml(result.flow_summary)}</div>
+    </div>` : ''}
+    ${(result.relations || []).length ? `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">맥락과 관계</div>
+      <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+        ${result.relations.map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+    ${(result.keypoints || []).length ? `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">핵심 포인트</div>
+      <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+        ${result.keypoints.map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+    ${(result.record_insights || []).length ? `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">기록할 인사이트</div>
+      <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+        ${result.record_insights.map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+    `
+    : `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">핵심 내용</div>
+      <ul style="margin:0 0 0 14px; padding:0; display:flex; flex-direction:column; gap:5px;">
+        ${(result.excerpts || []).map(e => `<li style="color:var(--ink-2); font-size:13px; line-height:1.6;">${escHtml(e)}</li>`).join('')}
+      </ul>
+    </div>`;
+
+  contentEl.innerHTML = `
+    ${langNote}
+    <div style="margin-bottom:12px;">
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">제목(예시)</div>
+      <div style="font-size:14px; font-weight:600; color:var(--ink);">${escHtml(result.title)}</div>
+    </div>
+    ${contextHtml}
+    ${result.tags && result.tags.length ? `
+    <div>
+      <div style="font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">태그</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        ${result.tags.map(t => `<span style="background:var(--accent-bg); color:var(--accent-tag); border-radius:20px; padding:2px 10px; font-size:12px; font-weight:500;">#${escHtml(t)}</span>`).join('')}
+      </div>
+    </div>` : ''}
+  `;
+}
+
+function showAIError(msg) {
+  // 진행 패널 숨기고 에러 표시 후 Step 1 복귀
+  const progressWrap = document.getElementById('aiProgressWrap');
+  if (progressWrap) {
+    progressWrap.innerHTML = `
+      <div style="text-align:center; padding:16px 0;">
+        <div style="font-size:28px; margin-bottom:10px;">😿</div>
+        <div style="font-size:14px; font-weight:600; color:var(--ink); margin-bottom:8px;">분석에 실패했어요</div>
+        <div style="font-size:13px; color:var(--ink-2); line-height:1.7; white-space:pre-line; margin-bottom:16px;">${escHtml(msg)}</div>
+        <button onclick="resetAIStep()" class="btn-primary" style="padding:9px 22px;">다시 시도하기</button>
+      </div>
+    `;
+  }
+}
+
+function handleVideoFollowupKey(e) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    askVideoFollowup();
+  }
+}
+
+async function askVideoFollowup(presetQuestion = '') {
+  const sourceText = aiAnalysisResult?.transcript_text || aiAnalysisResult?.source_text || '';
+  const sourceLabel = aiAnalysisResult?.source_label || (aiAnalysisResult?.transcript_text ? '유튜브 자막' : '원문');
+  if (!aiAnalysisResult || !sourceText) {
+    showToast('먼저 소스를 분석해주세요.', 'error');
+    return;
+  }
+  if (!aiConfig) {
+    openAISettings();
+    return;
+  }
+
+  const input = document.getElementById('aiFollowupQuestion');
+  const answerEl = document.getElementById('aiFollowupAnswer');
+  const button = document.getElementById('aiFollowupAskBtn');
+  const mergeBtn = document.getElementById('aiFollowupMergeBtn');
+  const question = (presetQuestion || input?.value || '').trim();
+  if (!question) {
+    showToast('질문을 입력해주세요.', 'error');
+    return;
+  }
+  if (input && presetQuestion) input.value = presetQuestion;
+  if (!answerEl) return;
+  aiLastFollowup = null;
+  if (mergeBtn) mergeBtn.style.display = 'none';
+
+  const context = findRelevantTranscriptContext(sourceText, question);
+  answerEl.style.display = 'block';
+  answerEl.textContent = aiConfig.provider === 'ollama'
+    ? `로컬 AI가 ${sourceLabel}에서 관련 부분을 찾고 있어요. 조금 걸릴 수 있습니다.`
+    : `${sourceLabel}에서 관련 부분을 찾고 있어요...`;
+  if (button) {
+    button.disabled = true;
+    button.textContent = '답변 중...';
+  }
+
+  const system = `너는 원문 기반 질의응답 도우미입니다.
+반드시 제공된 원문 일부와 기존 요약에서 확인되는 내용만 답하세요.
+원문에서 확인되지 않는 내용은 추측하지 말고 "원문에서는 확인되지 않아요"라고 말하세요.
+답변은 한국어로 자연스럽게 작성하고, 한자와 이모지는 쓰지 마세요.`;
+
+  const prompt = `자료 제목: ${aiAnalysisResult.title || '제목 없음'}
+자료 유형: ${sourceLabel}
+기존 한 줄 요약: ${aiAnalysisResult.one_line_summary || ''}
+
+사용자 질문:
+${question}
+
+=== 질문과 관련 있어 보이는 원문 일부 ===
+${context}
+====================================
+
+위 원문을 근거로 질문에 답하세요. 답변 끝에 "근거:"를 붙이고 어떤 원문 일부를 참고했는지 짧게 표시하세요.`;
+
+  try {
+    const reply = await callAIText(system, prompt);
+    aiLastFollowup = { question, answer: reply };
+    answerEl.textContent = reply;
+    if (mergeBtn) mergeBtn.style.display = 'inline-flex';
+  } catch (e) {
+    answerEl.textContent = '답변 생성에 실패했어요: ' + e.message;
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = '질문하기';
+    }
+  }
+}
+
+async function mergeFollowupIntoSummary(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  if (!aiAnalysisResult || !aiLastFollowup) {
+    showToast('먼저 추가 질문 답변을 받아주세요.', 'error');
+    return;
+  }
+  const mergeBtn = document.getElementById('aiFollowupMergeBtn');
+  if (mergeBtn) {
+    mergeBtn.disabled = true;
+    mergeBtn.textContent = '반영 중...';
+  }
+  const addModal = document.getElementById('addModal');
+  const modalPanel = addModal ? addModal.querySelector('.modal') : null;
+  const previousScrollTop = modalPanel ? modalPanel.scrollTop : 0;
+
+  const prompt = `기존 유튜브 요약과 추가 질문 답변이 있습니다.
+	추가 답변을 기존 요약의 흐름 속에 자연스럽게 녹여서 다시 정리해주세요.
+	추가 답변은 반드시 반영해야 합니다. 절대 생략하지 마세요.
+	중복되는 내용은 합치고, 새로 중요해진 내용은 전체 흐름이나 핵심 포인트에 반영하세요.
+	핵심 포인트 중 최소 1개는 추가 질문에 대한 답을 직접 담아야 합니다.
+핵심 포인트는 정말 중요한 7~10가지만 고르고, 각 항목은 제목만 쓰지 말고 "짧은 제목: 초등학생도 이해할 수 있는 설명" 형태로 작성하세요.
+어려운 용어가 있으면 뜻을 함께 풀어주세요.
+나쁜 예: "정통 더마 선택 시 주의사항"
+좋은 예: "정통 더마를 고를 때 볼 것: 광고 문구보다 실제 임상 자료, 저자극 테스트, 내 피부 고민에 맞는 성분인지 확인해야 한다."
+
+=== 기존 요약 ===
+제목: ${aiAnalysisResult.title || ''}
+한 줄 요약: ${aiAnalysisResult.one_line_summary || ''}
+전체 흐름: ${aiAnalysisResult.flow_summary || ''}
+핵심 포인트:
+${(aiAnalysisResult.keypoints || []).map(p => `- ${p}`).join('\n')}
+기록할 인사이트:
+${(aiAnalysisResult.record_insights || []).map(p => `- ${p}`).join('\n')}
+태그: ${(aiAnalysisResult.tags || []).join(', ')}
+
+=== 추가 질문 ===
+${aiLastFollowup.question}
+
+=== 추가 답변 ===
+${aiLastFollowup.answer}
+
+아래 JSON 형식으로만 응답하세요. 순수 JSON만 출력하세요:
+{
+  "title": "영상의 핵심 주제를 담은 제목 (30자 이내)",
+  "one_line_summary": "추가 답변까지 반영한 한 문장 요약",
+	  "flow_summary": "추가 답변이 자연스럽게 녹아든 전체 흐름 요약 4~6문장",
+	  "followup_keypoint": "추가 질문 답변을 반영한 핵심 포인트 1개. 질문에 대한 답이 구체적으로 들어가야 함",
+	  "keypoints": [
+    "핵심 포인트 1: 제목만 쓰지 말고 내용과 이유를 쉽게 설명",
+    "핵심 포인트 2: 어려운 용어가 나오면 뜻도 함께 설명",
+    "핵심 포인트 3",
+    "핵심 포인트 4",
+    "핵심 포인트 5",
+    "핵심 포인트 6",
+    "핵심 포인트 7",
+    "핵심 포인트 8 (선택)",
+    "핵심 포인트 9 (선택)",
+    "핵심 포인트 10 (선택)"
+  ],
+  "record_insights": [
+    "내 노트에 남길 만한 인사이트 1",
+    "내 노트에 남길 만한 인사이트 2",
+    "내 노트에 남길 만한 인사이트 3 (선택)"
+  ],
+  "tags": ["태그1", "태그2", "태그3"]
+}
+규칙: 제목형 목록 금지, 개요가 아니라 내용 설명, 쉬운 말 사용, 한국어만, 한자 금지, JSON만 출력`;
+
+  try {
+    const merged = await callAIRaw(prompt);
+    const fallbackFollowupPoint = `추가 질문에서 확인한 내용: ${aiLastFollowup.answer
+      .split('근거:')[0]
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 220)}`;
+    const followupPoint = (merged.followup_keypoint || fallbackFollowupPoint).trim();
+    const mergedKeypoints = merged.keypoints || [];
+    const mergedWithFollowup = {
+      ...merged,
+      keypoints: [
+        followupPoint,
+        ...mergedKeypoints.filter(p => !String(p).includes(followupPoint.slice(0, 24)))
+      ].slice(0, 10)
+    };
+    const contextSummary = normalizeContextSummary(mergedWithFollowup);
+    aiAnalysisResult = {
+      ...aiAnalysisResult,
+      title: merged.title || aiAnalysisResult.title,
+      ...contextSummary,
+      tags: merged.tags || aiAnalysisResult.tags || [],
+    };
+    if (addModal) addModal.classList.add('open');
+    renderAIPreviewContent(aiAnalysisResult);
+    const answerEl = document.getElementById('aiFollowupAnswer');
+    if (answerEl) {
+      answerEl.style.display = 'block';
+      answerEl.textContent = `요약에 반영했어요.\n\n방금 반영한 질문:\n${aiLastFollowup.question}`;
+    }
+    const followupWrap = document.getElementById('aiFollowupWrap');
+    if (followupWrap) {
+      followupWrap.style.display = 'flex';
+    }
+    if (modalPanel) setTimeout(() => { modalPanel.scrollTop = previousScrollTop; }, 0);
+    showToast('✅ 추가 답변을 요약에 반영했어요.');
+  } catch (e) {
+    showToast('요약 반영 실패: ' + e.message, 'error');
+  } finally {
+    if (mergeBtn) {
+      mergeBtn.disabled = false;
+      mergeBtn.textContent = '요약에 반영';
+    }
+  }
+}
+
+window.askVideoFollowup = askVideoFollowup;
+window.handleVideoFollowupKey = handleVideoFollowupKey;
+window.mergeFollowupIntoSummary = mergeFollowupIntoSummary;
+
+function buildTextSummarizePrompt(text, sourceUrl = '', sourceTitle = '') {
+  return `다음 텍스트를 분석해서 노트로 정리해주세요.
+${sourceTitle ? `원문 제목: ${sourceTitle}` : ''}
+${sourceUrl ? `원문 URL: ${sourceUrl}` : ''}
+
+=== 텍스트 ===
+${text}
+=============
+
+먼저 전체 맥락을 파악하세요. "무슨 문제를 제기하고, 어떤 근거와 예시로 설명하며, 어떤 결론으로 이어지는지"가 보여야 합니다.
+서로 다른 소재가 나오면 따로 나열하지 말고, 같은 주제의 예시인지, 원인과 결과인지, 대비되는 관점인지, 결론을 뒷받침하는 근거인지 밝혀주세요.
+핵심 포인트는 모든 소재를 억지로 다 넣지 말고, 정말 중요한 7~10가지만 고르세요.
+각 핵심 포인트는 제목만 쓰지 말고 "짧은 제목: 초등학생도 이해할 수 있는 설명" 형태로 작성하세요.
+어려운 용어가 있으면 뜻을 함께 풀어주세요.
+
+아래 JSON 형식으로만 응답해주세요. 다른 텍스트 없이 순수 JSON만 출력하세요:
+{
+  "title": "텍스트의 핵심 제목 (30자 이내)",
+  "type": "article",
+  "one_line_summary": "텍스트 전체를 한 문장으로 요약",
+  "flow_summary": "텍스트의 전개 흐름을 4~6문장으로 자연스럽게 요약. 문제-근거-예시-결론의 연결을 설명",
+  "relations": [
+    "요소 A와 B의 관계: A가 B로 이어지는 이유를 설명",
+    "문제와 해결책의 관계 또는 예시와 결론의 관계",
+    "서로 다른 소재들이 같은 주제를 어떻게 뒷받침하는지 설명"
+  ],
+  "keypoints": [
+    "핵심 포인트 1: 제목만 쓰지 말고 내용과 이유를 쉽게 설명",
+    "핵심 포인트 2: 어려운 용어가 나오면 뜻도 함께 설명",
+    "핵심 포인트 3",
+    "핵심 포인트 4",
+    "핵심 포인트 5",
+    "핵심 포인트 6",
+    "핵심 포인트 7",
+    "핵심 포인트 8 (선택)",
+    "핵심 포인트 9 (선택)",
+    "핵심 포인트 10 (선택)"
+  ],
+  "record_insights": [
+    "내 노트에 남길 만한 인사이트 1",
+    "내 노트에 남길 만한 인사이트 2",
+    "내 노트에 남길 만한 인사이트 3 (선택)"
+  ],
+  "tags": ["태그1", "태그2", "태그3"]
+}
+
+규칙: 제목형 목록 금지, 개요가 아니라 내용 설명, 쉬운 말 사용, 한국어로만, 한자 금지, JSON만 출력`;
+}
+
+function buildTextChunkPrompt(chunkText, chunkIndex, totalChunks, sourceTitle = '') {
+  return `다음은 긴 텍스트의 ${totalChunks}개 파트 중 ${chunkIndex + 1}번째 파트입니다.
+${sourceTitle ? `원문 제목: ${sourceTitle}` : ''}
+
+=== 텍스트 파트 ${chunkIndex + 1}/${totalChunks} ===
+${chunkText}
+===========================
+
+이 파트의 맥락과 요소 간 관계를 정리해주세요.
+중요한 문장만 뽑지 말고, "무엇이 원인이고 결과인지", "어떤 예시가 어떤 결론을 뒷받침하는지", "이 파트가 전체 글에서 어떤 역할을 하는지"를 설명하세요.
+
+아래 JSON 형식으로만 응답하세요. 순수 JSON만 출력하세요:
+{
+  "part_flow": "이 파트가 전체 글에서 맡는 역할 또는 흐름",
+  "relations": [
+    "요소 A와 B의 관계: A 때문에 B가 중요해진다는 식으로 설명",
+    "문제-해결, 원인-결과, 예시-결론 중 확인되는 관계 설명"
+  ],
+  "keypoints": [
+    "핵심 내용 1: 제목만 쓰지 말고 관계와 의미를 쉽게 설명",
+    "핵심 내용 2: 어려운 용어가 있으면 뜻도 함께 설명",
+    "핵심 내용 3",
+    "핵심 내용 4",
+    "핵심 내용 5"
+  ]
+}
+규칙: 제목형 목록 금지, 관계 설명 포함, 쉬운 말 사용, 한국어만, 한자 금지, JSON만 출력`;
+}
+
+function buildTextMergePrompt(chunkSummaries, sourceUrl = '', sourceTitle = '') {
+  const summaryText = chunkSummaries
+    .map((s, i) => `[파트 ${i + 1}]\n흐름: ${s.part_flow || ''}\n관계:\n${(s.relations || []).join('\n')}\n핵심:\n${(s.keypoints || []).join('\n')}`)
+    .join('\n\n');
+  return `다음은 긴 텍스트를 여러 파트로 나눠 정리한 결과입니다.
+${sourceTitle ? `원문 제목: ${sourceTitle}` : ''}
+${sourceUrl ? `원문 URL: ${sourceUrl}` : ''}
+
+=== 파트별 정리 ===
+${summaryText}
+==================
+
+파트별 내용을 하나의 노트로 합쳐주세요.
+단순히 파트별 내용을 이어 붙이지 말고, 전체 글의 중심 주장과 요소 간 관계를 먼저 파악한 뒤 자연스럽게 정리하세요.
+서로 다른 소재가 나오면 같은 주제의 예시인지, 원인과 결과인지, 대비되는 관점인지, 결론을 뒷받침하는 근거인지 밝혀주세요.
+
+아래 JSON 형식으로만 응답해주세요. 다른 텍스트 없이 순수 JSON만 출력하세요:
+{
+  "title": "텍스트의 핵심 제목 (30자 이내)",
+  "type": "article",
+  "one_line_summary": "전체 내용을 한 문장으로 요약",
+  "flow_summary": "전체 맥락을 4~6문장으로 요약. 문제-근거-예시-결론의 연결을 설명",
+  "relations": [
+    "요소 A와 B의 관계: A가 B로 이어지는 이유를 설명",
+    "문제와 해결책의 관계 또는 예시와 결론의 관계",
+    "서로 다른 파트들이 같은 주제를 어떻게 뒷받침하는지 설명"
+  ],
+  "keypoints": [
+    "핵심 포인트 1: 제목만 쓰지 말고 내용과 관계를 쉽게 설명",
+    "핵심 포인트 2: 어려운 용어가 나오면 뜻도 함께 설명",
+    "핵심 포인트 3",
+    "핵심 포인트 4",
+    "핵심 포인트 5",
+    "핵심 포인트 6",
+    "핵심 포인트 7",
+    "핵심 포인트 8 (선택)",
+    "핵심 포인트 9 (선택)",
+    "핵심 포인트 10 (선택)"
+  ],
+  "record_insights": [
+    "내 노트에 남길 만한 인사이트 1",
+    "내 노트에 남길 만한 인사이트 2",
+    "내 노트에 남길 만한 인사이트 3 (선택)"
+  ],
+  "tags": ["태그1", "태그2", "태그3"]
+}
+
+규칙: 제목형 목록 금지, 관계 설명 포함, 쉬운 말 사용, 한국어로만, 한자 금지, JSON만 출력`;
+}
+
+async function summarizeSourceText(text, sourceUrl = '', sourceTitle = '', onProgress) {
+  if (text.length <= CHUNK_THRESHOLD) {
+    if (onProgress) onProgress('direct', 0, 1);
+    return await callAIRaw(buildTextSummarizePrompt(text, sourceUrl, sourceTitle));
+  }
+
+  const chunks = splitIntoChunks(text, CHUNK_MAX_LEN);
+  const partSummaries = [];
+  for (let i = 0; i < chunks.length; i++) {
+    if (onProgress) onProgress('chunk', i, chunks.length);
+    partSummaries.push(await callAIRaw(buildTextChunkPrompt(chunks[i], i, chunks.length, sourceTitle)));
+  }
+  if (onProgress) onProgress('merge', chunks.length, chunks.length);
+  return await callAIRaw(buildTextMergePrompt(partSummaries, sourceUrl, sourceTitle));
+}
+
+function applyAIResult() {
+  if (!aiAnalysisResult) return;
+  const r = aiAnalysisResult;
+
+  // 탭을 직접 작성으로 전환 (필드에 채워진 채로)
+  switchAddTab('manual');
+
+  // 필드 채우기 (느낀 점, 실천 목록 제외)
+  const titleEl = document.getElementById('f-title');
+  if (titleEl) titleEl.value = r.title || '';
+
+  const typeEl = document.getElementById('f-type');
+  if (typeEl && r.type) {
+    // 옵션 중 매칭되는 것 선택
+    const opt = Array.from(typeEl.options).find(o => o.value === r.type);
+    if (opt) typeEl.value = r.type;
+  }
+
+  const authorEl = document.getElementById('f-author');
+  if (authorEl) authorEl.value = r.link || r.author || '';
+
+  const dateEl = document.getElementById('f-date');
+  if (dateEl) dateEl.value = today();
+
+  // 메모
+  setExcerptFields((r.excerpts || []).join('\n\n'));
+
+  // 태그
+  currentTags = r.tags ? [...r.tags] : [];
+  renderTagChips();
+
+  // 느낀 점, 실천 목록은 비워둠
+  const thoughtEl = document.getElementById('f-thought');
+  if (thoughtEl) thoughtEl.value = '';
+  editingActionTodos = [];
+  renderActionTodoListEdit();
+
+  showToast('✅ AI가 정리한 내용이 채워졌어요! 느낀 점과 실천 목록을 추가해보세요.');
+  setTimeout(() => document.getElementById('f-thought').focus(), 100);
+}
+
+// ─────────────────────────────────────────
+// 💡 아이디어 메모 로직
+// ─────────────────────────────────────────
+let ideas = [];
+let editingIdeaId = null;
+let currentIdeaTags = [];
+let ideaTagFilter = null; // null = 전체
+
+function loadIdeas() {
+  try { ideas = JSON.parse(localStorage.getItem('ni_ideas') || '[]'); } catch(e) { ideas = []; }
+}
+
+function saveIdeas() {
+  localStorage.setItem('ni_ideas', JSON.stringify(ideas));
+}
+
+function openIdeaModal(idea = null) {
+  editingIdeaId = idea ? idea.id : null;
+  currentIdeaTags = idea ? [...(idea.tags || [])] : [];
+  document.getElementById('ideaModalHeading').textContent = idea ? '💡 아이디어 수정' : '💡 아이디어 추가';
+  document.getElementById('idea-title').value = idea ? (idea.title || '') : '';
+  document.getElementById('idea-content').value = idea ? (idea.content || '') : '';
+  renderIdeaTagChips();
+  document.getElementById('ideaModal').classList.add('open');
+  setTimeout(() => document.getElementById('idea-content').focus(), 50);
+}
+
+function saveIdea() {
+  const title = document.getElementById('idea-title').value.trim();
+  const content = document.getElementById('idea-content').value.trim();
+  if (!content) { showToast('내용을 입력해주세요.', 'error'); return; }
+
+  if (editingIdeaId) {
+    const idx = ideas.findIndex(i => i.id === editingIdeaId);
+    if (idx !== -1) ideas[idx] = { ...ideas[idx], title, content, tags: [...currentIdeaTags], updatedAt: Date.now() };
+  } else {
+    ideas.unshift({ id: Date.now(), title, content, tags: [...currentIdeaTags], createdAt: Date.now() });
+  }
+  saveIdeas();
+  closeModal('ideaModal');
+  renderIdeaScreen();
+  showToast('💡 아이디어가 저장됐어요!');
+}
+
+function deleteIdea(id) {
+  if (!confirm('이 아이디어를 삭제할까요?')) return;
+  ideas = ideas.filter(i => i.id !== id);
+  saveIdeas();
+  renderIdeaScreen();
+  showToast('🗑️ 삭제했어요.');
+}
+
+function handleIdeaTagKey(e) {
+  if (e.key !== 'Enter' && e.key !== ',') return;
+  e.preventDefault();
+  const v = e.target.value.trim().replace(/^#/, '');
+  if (v && !currentIdeaTags.includes(v)) { currentIdeaTags.push(v); renderIdeaTagChips(); }
+  e.target.value = '';
+}
+
+function removeIdeaTag(tag) {
+  currentIdeaTags = currentIdeaTags.filter(t => t !== tag);
+  renderIdeaTagChips();
+}
+
+function renderIdeaTagChips() {
+  const wrap = document.getElementById('ideaTagWrap');
+  if (!wrap) return;
+  const input = document.getElementById('ideaTagInput');
+  wrap.innerHTML = '';
+  currentIdeaTags.forEach(tag => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `#${escHtml(tag)} <button onclick="removeIdeaTag('${escHtml(tag)}')" style="background:none;border:none;cursor:pointer;color:inherit;padding:0 0 0 4px;font-size:11px;">✕</button>`;
+    wrap.appendChild(chip);
+  });
+  wrap.appendChild(input);
+  input.value = '';
+}
+
+function renderIdeaScreen() {
+  loadIdeas();
+  const filtered = ideaTagFilter
+    ? ideas.filter(i => (i.tags || []).includes(ideaTagFilter))
+    : ideas;
+
+  // 태그 필터 바
+  const allTags = [...new Set(ideas.flatMap(i => i.tags || []))];
+  const filterEl = document.getElementById('ideaTagFilter');
+  if (filterEl) {
+    filterEl.innerHTML = [
+      `<button onclick="setIdeaTagFilter(null)"
+        style="padding:5px 14px; border-radius:99px; border:1.5px solid ${!ideaTagFilter ? 'var(--accent-2)' : 'var(--paper-3)'}; background:${!ideaTagFilter ? 'var(--accent-bg)' : '#fff'}; color:${!ideaTagFilter ? 'var(--accent-2)' : 'var(--ink-2)'}; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;">
+        전체
+      </button>`,
+      ...allTags.map(tag =>
+        `<button onclick="setIdeaTagFilter('${escHtml(tag)}')"
+          style="padding:5px 14px; border-radius:99px; border:1.5px solid ${ideaTagFilter === tag ? 'var(--accent-2)' : 'var(--paper-3)'}; background:${ideaTagFilter === tag ? 'var(--accent-bg)' : '#fff'}; color:${ideaTagFilter === tag ? 'var(--accent-2)' : 'var(--ink-2)'}; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit;">
+          #${escHtml(tag)}
+        </button>`
+      )
+    ].join('');
+  }
+
+  // 카드 렌더링
+  const grid = document.getElementById('ideaGrid');
+  const empty = document.getElementById('ideaEmpty');
+  if (!grid) return;
+
+  if (!filtered.length) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(idea => {
+    const date = idea.createdAt ? new Date(idea.createdAt).toLocaleDateString('ko-KR', { month:'short', day:'numeric' }) : '';
+    const tags = (idea.tags || []).map(t => `<span style="background:var(--accent-bg); color:var(--accent-tag); border-radius:99px; padding:2px 9px; font-size:11px; font-weight:500;">#${escHtml(t)}</span>`).join('');
+    return `
+      <div style="background:#fff; border:1px solid var(--paper-3); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:10px; cursor:pointer; transition:box-shadow 0.15s;"
+           onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow=''"
+           onclick="openIdeaModal(ideas.find(i=>i.id===${idea.id}))">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div style="flex:1; min-width:0;">
+            ${idea.title ? `<div style="font-size:14px; font-weight:700; color:var(--ink); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escHtml(idea.title)}</div>` : ''}
+            <div style="font-size:13px; color:var(--ink-2); line-height:1.65; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;">${escHtml(idea.content)}</div>
+          </div>
+          <button onclick="event.stopPropagation(); deleteIdea(${idea.id})"
+            style="background:none; border:none; color:var(--ink-3); cursor:pointer; font-size:15px; padding:2px; flex-shrink:0; opacity:0; transition:opacity 0.15s;"
+            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">🗑</button>
+        </div>
+        ${tags ? `<div style="display:flex; flex-wrap:wrap; gap:5px;">${tags}</div>` : ''}
+        <div style="font-size:11px; color:var(--ink-3);">${date}</div>
+      </div>`;
+  }).join('');
+}
+
+function setIdeaTagFilter(tag) {
+  ideaTagFilter = tag;
+  renderIdeaScreen();
+}
+
 initAuth();
+
 </script>
 
 <!-- Firebase / Nyang Coach Integration Module -->
@@ -2404,8 +4515,8 @@ initAuth();
     projectId: "nyangcoach",
     storageBucket: "nyangcoach.firebasestorage.app",
     messagingSenderId: "912621917226",
-    appId: "1:912621917226:web:76cca3bc8aa5adb0c69f53",
-    measurementId: "G-854Q6YXS8Y"
+    appId: "1:912621917226:web:4c9ae368ec728618c69f53",
+    measurementId: "G-HH6305J2H9"
   };
 
   const nyangApp = initializeApp(firebaseConfig, "nyangcoach");
@@ -2483,11 +4594,7 @@ initAuth();
     const taskDate = noteDate || today();
     const isToday = (taskDate === today());
 
-    // noteId가 있다면, PC 로컬 서버 주소 기반의 deep link를 생성하여 텍스트에 포함
-    let taskText = `[아이디어] ${ideaText}`;
-    if (noteId) {
-      taskText += ` (노트: http://localhost:8000/?id=${noteId})`;
-    }
+    let taskText = `[냥인사이트] ${ideaText}`;
 
     const time = timeData ? timeData.time : null;
     const timeStart = timeData ? timeData.timeStart : null;
