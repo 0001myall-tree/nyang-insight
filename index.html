@@ -3006,15 +3006,14 @@ async function callGemini(system, history) {
     };
   });
 
+  // Prepend system instruction to the first user message if present
+  if (system && contents.length > 0 && contents[0].role === 'user') {
+    contents[0].parts[0].text = `[시스템 지침]\n${system}\n\n[사용자 메시지]\n${contents[0].parts[0].text}`;
+  }
+
   const payload = {
     contents: contents
   };
-
-  if (system) {
-    payload.systemInstruction = {
-      parts: [{ text: system }]
-    };
-  }
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${aiConfig.key}`, {
     method: 'POST',
